@@ -47,7 +47,7 @@ type Node struct {
 	dirty         bool
 }
 
-func (n Node) Move(pt image.Point){
+func (n Node) Move(pt image.Point) {
 	n.sp = pt
 }
 
