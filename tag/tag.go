@@ -238,6 +238,7 @@ func (t *Tag) Put() (err error) {
 	if name == "" {
 		return fmt.Errorf("no file")
 	}
+	t.Window().Send(fmt.Errorf("Put %q\n",name))
 	writefile(name, t.Body.Bytes())
 	return nil
 }
@@ -378,7 +379,6 @@ func (t *Tag) Handle(act text.Editor, e interface{}) {
 		}
 		t.Mark()
 	case *edit.Command:
-		fmt.Printf("command %#v\n", e)
 		if e == nil {
 			break
 		}
