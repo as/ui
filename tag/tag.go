@@ -238,7 +238,7 @@ func (t *Tag) Put() (err error) {
 	if name == "" {
 		return fmt.Errorf("no file")
 	}
-	t.Window().Send(fmt.Errorf("Put %q\n",name))
+	t.Window().Send(fmt.Errorf("Put %q",name))
 	writefile(name, t.Body.Bytes())
 	return nil
 }
