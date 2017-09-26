@@ -11,6 +11,28 @@ import (
 	"golang.org/x/exp/shiny/screen"
 )
 
+type Item interface{
+	Buffer() screen.Buffer
+	Send(e interface{})
+	SendFirst(e interface{})
+	NextEvent() (e interface{})
+}
+
+type Win interface{
+	Item
+	Blank()
+	Bounds() image.Rectangle
+	Bytes() []byte
+	Dirty() bool
+	Fill()
+	Len() int64
+	Refresh()
+	Size() image.Point
+	Upload()
+	Resize(size image.Point)
+	Move(sp image.Point)
+}
+
 type Dev struct {
 	scr    screen.Screen
 	events screen.Window
