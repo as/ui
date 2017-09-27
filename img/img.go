@@ -51,7 +51,7 @@ func New(dev *ui.Dev, sp, size, pad image.Point, img image.Image) *Img {
 	return w
 }
 
-func (w *Img) Mark(){ w.dirty=true}
+func (w *Img) Mark() { w.dirty = true }
 
 func (w *Img) init() {
 	w.Blank()
@@ -71,7 +71,7 @@ func (w *Img) Blank() {
 		r.Min.Y--
 	}
 	w.Mark()
-//	w.drawsb()
+	//	w.drawsb()
 }
 
 func (n *Img) Bounds() image.Rectangle { return image.Rectangle{n.Sp, n.Size()} }

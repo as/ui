@@ -127,6 +127,8 @@ func New(dev *ui.Dev, sp, size, pad image.Point, ft *font.Font, cols frame.Color
 	return &Tag{sp: sp, Win: wtag, Body: w, basedir: wd}
 }
 
+
+
 func (t *Tag) Move(pt image.Point) {
 	t.Win.Move(pt)
 	if t.Body == nil {
@@ -161,6 +163,16 @@ func mustCompile(prog string) *edit.Command {
 func (t *Tag) Open(basepath, title string) {
 	t.basedir = path.DirOf(basepath)
 	t.Get(title)
+}
+
+func (t *Tag) Close() (err error){
+	if t.Body != nil{
+		err = t.Body.Close()
+	}
+	if t.Win != nil{
+		err = t.Win.Close()
+	}
+	return err
 }
 
 func (t *Tag) Dir() string {
@@ -238,7 +250,7 @@ func (t *Tag) Put() (err error) {
 	if name == "" {
 		return fmt.Errorf("no file")
 	}
-	t.Window().Send(fmt.Errorf("Put %q",name))
+	t.Window().Send(fmt.Errorf("Put %q", name))
 	writefile(name, t.Body.Bytes())
 	return nil
 }

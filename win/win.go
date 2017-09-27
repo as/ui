@@ -92,6 +92,22 @@ func (w Win) Loc() image.Rectangle {
 	return image.Rectangle{w.Sp, w.Sp.Add(w.size)}
 }
 
+func (w *Win) Close() error{
+	if w.Frame != nil{
+		w.Frame.Close()
+		w.Frame = nil
+	}
+	if w.b != nil{
+		w.b.Release()
+		w.b = nil
+	}
+	if w.Editor != nil{
+		w.Editor.Close()
+		w.Editor = nil
+	}
+	return nil
+}
+
 func (w *Win) Resize(size image.Point) {
 	b := w.NewBuffer(size)
 	w.size = size
