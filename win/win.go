@@ -22,7 +22,7 @@ const (
 )
 
 func (w *Win) Dirty() bool {
-	return w.dirty || w.Frame.Dirty()
+	return w.dirty || (w.Frame != nil && w.Frame.Dirty())
 }
 
 type Node struct {
@@ -47,6 +47,8 @@ type Win struct {
 	org      int64
 	Sq       int64
 	inverted int
+
+	UserFunc func(*Win)
 }
 
 func (n *Win) Bounds() image.Rectangle {
@@ -62,15 +64,23 @@ func New(dev *ui.Dev, sp, size, pad image.Point, ft *font.Font, cols frame.Color
 	ed, _ := text.Open(text.NewBuffer())
 	b := dev.NewBuffer(size)
 	w := &Win{
-		Frame:  frame.New(r, ft, b.RGBA(), cols),
-		Node:   Node{Sp: sp, size: size, pad: pad},
-		Dev:    dev,
-		b:      b,
-		Editor: ed,
+		Frame:    frame.New(r, ft, b.RGBA(), cols),
+		Node:     Node{Sp: sp, size: size, pad: pad},
+		Dev:      dev,
+		b:        b,
+		Editor:   ed,
+		UserFunc: func(w *Win) {},
 	}
 	w.init()
 	w.scrollinit(pad)
 	return w
+}
+
+func (w *Win) FuncInstall(fn func(*Win)) {
+	if fn == nil {
+		fn = func(w *Win) {}
+	}
+	w.UserFunc = fn
 }
 
 func (w *Win) Buffer() screen.Buffer {
@@ -92,16 +102,16 @@ func (w Win) Loc() image.Rectangle {
 	return image.Rectangle{w.Sp, w.Sp.Add(w.size)}
 }
 
-func (w *Win) Close() error{
-	if w.Frame != nil{
+func (w *Win) Close() error {
+	if w.Frame != nil {
 		w.Frame.Close()
 		w.Frame = nil
 	}
-	if w.b != nil{
+	if w.b != nil {
 		w.b.Release()
 		w.b = nil
 	}
-	if w.Editor != nil{
+	if w.Editor != nil {
 		w.Editor.Close()
 		w.Editor = nil
 	}
@@ -205,6 +215,7 @@ func (w *Win) filldebug() {
 
 func (w *Win) Refresh() {
 	w.Frame.Refresh()
+	w.UserFunc(w)
 	w.Window().Upload(w.Sp, w.b, w.b.Bounds())
 	w.Flush()
 	w.dirty = false

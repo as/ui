@@ -18,6 +18,7 @@ func (w *Win) SetOrigin(org int64, exact bool) {
 		}
 	}
 	w.setOrigin(clamp(org, 0, w.Len()))
+	w.UserFunc(w)
 }
 
 func (w *Win) setOrigin(org int64) {
