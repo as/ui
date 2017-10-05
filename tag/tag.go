@@ -127,8 +127,6 @@ func New(dev *ui.Dev, sp, size, pad image.Point, ft *font.Font, cols frame.Color
 	return &Tag{sp: sp, Win: wtag, Body: w, basedir: wd}
 }
 
-
-
 func (t *Tag) Move(pt image.Point) {
 	t.Win.Move(pt)
 	if t.Body == nil {
@@ -162,14 +160,15 @@ func mustCompile(prog string) *edit.Command {
 
 func (t *Tag) Open(basepath, title string) {
 	t.basedir = path.DirOf(basepath)
+	println(title)
 	t.Get(title)
 }
 
-func (t *Tag) Close() (err error){
-	if t.Body != nil{
+func (t *Tag) Close() (err error) {
+	if t.Body != nil {
 		err = t.Body.Close()
 	}
-	if t.Win != nil{
+	if t.Win != nil {
 		err = t.Win.Close()
 	}
 	return err
@@ -183,24 +182,7 @@ func (t *Tag) Dir() string {
 	return filepath.Join(t.basedir, x)
 }
 
-func (t *Tag) Get(name string) {
-	w := t.Body
-	if w == nil {
-		w.SendFirst(fmt.Errorf("tag: no body to get %q\n", name))
-		return
-	}
-	abs := ""
-	name, addr := action.SplitPath(name)
-	if filepath.IsAbs(name) && path.Exists(name) {
-		t.basedir = path.DirOf(name)
-		abs = name
-	} else {
-		abs = filepath.Join(t.basedir, name)
-		if !path.Exists(abs) {
-			//
-		}
-	}
-
+func (t *Tag) fixtag(abs string) {
 	wtag := t.Win
 	p := wtag.Bytes()
 	maint := find.Find(p, 0, []byte{'|'})
@@ -210,6 +192,9 @@ func (t *Tag) Get(name string) {
 	wtag.Delete(0, maint+1)
 	wtag.InsertString(abs+"\tPut Del |", 0)
 	wtag.Refresh()
+}
+func (t *Tag) getbody(abs, addr string) {
+	w := t.Body
 	w.Delete(0, w.Len())
 	w.Insert(t.readfile(abs), 0)
 	w.Select(0, 0)
@@ -217,6 +202,34 @@ func (t *Tag) Get(name string) {
 	if addr != "" {
 		w.SendFirst(mustCompile(addr))
 	}
+}
+
+func (t *Tag) Get(name string) {
+	w := t.Body
+	if w == nil {
+		w.SendFirst(fmt.Errorf("tag: window has no body for get request %q\n", name))
+		return
+	}
+	if name == "" {
+		t.fixtag("")
+		return
+	}
+
+	abs := ""
+	name, addr := action.SplitPath(name)
+	if filepath.IsAbs(name) && path.Exists(name) {
+		t.basedir = path.DirOf(name)
+		abs = name
+		t.fixtag(abs)
+		t.getbody(abs, addr)
+		return
+	}
+	abs = filepath.Join(t.basedir, name)
+	if !path.Exists(abs) {
+		//
+	}
+	t.fixtag(abs)
+	t.getbody(abs, addr)
 }
 
 type GetEvent struct {
