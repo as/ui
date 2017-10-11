@@ -5,16 +5,16 @@ package win
 
 import (
 	"fmt"
-	"image"
-	"image/draw"
-	"sync"
-	"runtime"
 	"github.com/as/frame"
 	"github.com/as/frame/font"
 	"github.com/as/text"
 	"github.com/as/ui"
 	"golang.org/x/exp/shiny/screen"
 	"golang.org/x/mobile/event/mouse"
+	"image"
+	"image/draw"
+	"runtime"
+	"sync"
 )
 
 const (
@@ -48,11 +48,11 @@ type Win struct {
 	Sq       int64
 	inverted int
 
-		donec chan bool
-		workc chan image.Rectangle
-		wg sync.WaitGroup
-		workerwg sync.WaitGroup
-		
+	donec    chan bool
+	workc    chan image.Rectangle
+	wg       sync.WaitGroup
+	workerwg sync.WaitGroup
+
 	UserFunc func(*Win)
 }
 
@@ -75,7 +75,6 @@ func New(dev *ui.Dev, sp, size, pad image.Point, ft *font.Font, cols frame.Color
 		b:        b,
 		Editor:   ed,
 		UserFunc: func(w *Win) {},
-		
 	}
 	w.makeg()
 	w.init()
@@ -83,29 +82,28 @@ func New(dev *ui.Dev, sp, size, pad image.Point, ft *font.Font, cols frame.Color
 	return w
 }
 
+func (w *Win) makeg() {
+	ncpu := runtime.NumCPU()
 
-func (w *Win) makeg(){
-	ncpu :=  runtime.NumCPU()
-	
-	w.donec=make(chan bool)
-	w.workc=make(chan image.Rectangle,ncpu)
+	w.donec = make(chan bool)
+	w.workc = make(chan image.Rectangle, ncpu)
 	w.workerwg.Add(ncpu)
-	
-	for i := 0; i < ncpu; i++{
-		go func(){
-			for{
-				select{
-				case <- w.donec :
+
+	for i := 0; i < ncpu; i++ {
+		go func() {
+			for {
+				select {
+				case <-w.donec:
 					return
-				case r := <- w.workc:
+				case r := <-w.workc:
 					w.Window().Upload(w.Sp.Add(r.Min), w.b, r)
 					w.wg.Done()
 				}
 			}
 		}()
 	}
-	
-	go func(){
+
+	go func() {
 		w.workerwg.Wait()
 		close(w.donec)
 		close(w.workc)
