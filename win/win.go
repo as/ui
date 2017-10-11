@@ -8,7 +8,7 @@ import (
 	"image"
 	"image/draw"
 	"sync"
-
+	"runtime"
 	"github.com/as/frame"
 	"github.com/as/frame/font"
 	"github.com/as/text"
@@ -48,6 +48,11 @@ type Win struct {
 	Sq       int64
 	inverted int
 
+		donec chan bool
+		workc chan image.Rectangle
+		wg sync.WaitGroup
+		workerwg sync.WaitGroup
+		
 	UserFunc func(*Win)
 }
 
@@ -70,10 +75,41 @@ func New(dev *ui.Dev, sp, size, pad image.Point, ft *font.Font, cols frame.Color
 		b:        b,
 		Editor:   ed,
 		UserFunc: func(w *Win) {},
+		
 	}
+	w.makeg()
 	w.init()
 	w.scrollinit(pad)
 	return w
+}
+
+
+func (w *Win) makeg(){
+	ncpu :=  runtime.NumCPU()
+	
+	w.donec=make(chan bool)
+	w.workc=make(chan image.Rectangle,ncpu)
+	w.workerwg.Add(ncpu)
+	
+	for i := 0; i < ncpu; i++{
+		go func(){
+			for{
+				select{
+				case <- w.donec :
+					return
+				case r := <- w.workc:
+					w.Window().Upload(w.Sp.Add(r.Min), w.b, r)
+					w.wg.Done()
+				}
+			}
+		}()
+	}
+	
+	go func(){
+		w.workerwg.Wait()
+		close(w.donec)
+		close(w.workc)
+	}()
 }
 
 func (w *Win) FuncInstall(fn func(*Win)) {
@@ -223,6 +259,21 @@ func (w *Win) Refresh() {
 
 // Put
 func (w *Win) Upload() {
+	if !w.dirty {
+		return
+	}
+	cache := append([]image.Rectangle{}, w.Cache()...)
+	w.wg.Add(len(cache))
+	for _, r := range w.Cache() {
+		w.workc <- r
+	}
+	w.wg.Wait()
+	w.Flush()
+	w.dirty = false
+}
+
+// the old "Upload"
+func (w *Win) zUpload() {
 	if !w.dirty {
 		return
 	}
