@@ -82,30 +82,34 @@ func New(dev *ui.Dev, sp, size, pad image.Point, ft *font.Font, cols frame.Color
 	return w
 }
 
+func (w *Win) workerspawn() {
+	w.workerwg.Add(1)
+	go func() {
+		defer w.workerwg.Done()
+		for {
+			select {
+			case <-w.donec:
+				return
+			case r := <-w.workc:
+				w.Window().Upload(w.Sp.Add(r.Min), w.b, r)
+				w.wg.Done()
+			}
+		}
+	}()
+}
+
 func (w *Win) makeg() {
 	ncpu := runtime.NumCPU()
 
 	w.donec = make(chan bool)
-	w.workc = make(chan image.Rectangle, ncpu)
-	w.workerwg.Add(ncpu)
+	w.workc = make(chan image.Rectangle, ncpu*8)
 
-	for i := 0; i < ncpu; i++ {
-		go func() {
-			for {
-				select {
-				case <-w.donec:
-					return
-				case r := <-w.workc:
-					w.Window().Upload(w.Sp.Add(r.Min), w.b, r)
-					w.wg.Done()
-				}
-			}
-		}()
+	for i := 0; i < ncpu*2; i++ {
+		w.workerspawn()
 	}
 
 	go func() {
 		w.workerwg.Wait()
-		close(w.donec)
 		close(w.workc)
 	}()
 }
@@ -148,6 +152,10 @@ func (w *Win) Close() error {
 	if w.Editor != nil {
 		w.Editor.Close()
 		w.Editor = nil
+	}
+	if w.donec != nil {
+		close(w.donec)
+		w.donec = nil
 	}
 	return nil
 }
@@ -265,8 +273,8 @@ func (w *Win) Upload() {
 	for _, r := range w.Cache() {
 		w.workc <- r
 	}
-	w.wg.Wait()
 	w.Flush()
+	w.wg.Wait()
 	w.dirty = false
 }
 
