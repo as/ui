@@ -258,11 +258,8 @@ func (w *Win) filldebug() {
 func (w *Win) Refresh() {
 	w.Frame.Refresh()
 	w.UserFunc(w)
-	w.wg.Add(1)
-	w.workc <- w.b.Bounds()
-	//w.Window().Upload(w.Sp, w.b, w.b.Bounds())
+	w.Window().Upload(w.Sp, w.b, w.b.Bounds())
 	w.Flush()
-	w.wg.Done()
 	w.dirty = false
 }
 
