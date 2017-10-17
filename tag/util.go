@@ -11,7 +11,6 @@ import (
 	"os"
 	"sort"
 	"strings"
-	"text/tabwriter"
 
 	"github.com/as/clip"
 	"github.com/as/cursor"
@@ -42,7 +41,7 @@ func (t *Tag) readfile(s string) (p []byte) {
 		dx := t.Font.MeasureByte('e')
 		x := 0
 		b := new(bytes.Buffer)
-		w := tabwriter.NewWriter(b, 0, 8, 3, ' ', 0)
+		w := b
 		maxx := t.Frame.Bounds().Dx()
 		for _, v := range fi {
 			nm := v.Name()
@@ -60,7 +59,6 @@ func (t *Tag) readfile(s string) (p []byte) {
 			fmt.Fprintf(w, word)
 			x += advance
 		}
-		w.Flush()
 		return b.Bytes()
 	}
 	p, err = ioutil.ReadFile(s)
