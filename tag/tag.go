@@ -119,8 +119,11 @@ func New(dev *ui.Dev, sp, size, pad image.Point, ft *font.Font, cols frame.Color
 	if size.Y < tagY {
 		return &Tag{sp: sp, Win: wtag, Body: nil}
 	}
+	
 	// Make window
 	cols.Back = Yellow
+	ft=font.Clone(ft, ft.Size())
+	ft.SetLetting(ft.Size()/3)
 	w := win.New(dev, sp, size, pad, ft, frame.A)
 
 	wd, _ := os.Getwd()
