@@ -14,6 +14,7 @@ import (
 
 	"github.com/as/clip"
 	"github.com/as/cursor"
+	"github.com/as/frame"
 )
 
 func max(a, b int) int {
@@ -38,11 +39,12 @@ func (t *Tag) readfile(s string) (p []byte) {
 			ni, nj := fi[i].Name(), fi[j].Name()
 			return strings.Compare(ni, nj) < 0
 		})
-		dx := t.Font.MeasureByte('e')
+		dx := t.Body.Font.MeasureByte('e')
 		x := 0
 		b := new(bytes.Buffer)
 		w := b
-		maxx := t.Frame.Bounds().Dx()
+		t.Body.Frame.SetFlags(t.Body.Frame.Flags() | frame.FrElastic)
+		maxx := t.Body.Frame.Bounds().Dx()
 		for _, v := range fi {
 			nm := v.Name()
 			if v.IsDir() {
@@ -59,6 +61,7 @@ func (t *Tag) readfile(s string) (p []byte) {
 			fmt.Fprintf(w, word)
 			x += advance
 		}
+		fmt.Fprintf(w, "\n")
 		return b.Bytes()
 	}
 	p, err = ioutil.ReadFile(s)
