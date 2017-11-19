@@ -166,7 +166,7 @@ func (w *Win) Resize(size image.Point) {
 	w.b.Release()
 	w.b = b
 	r := image.Rectangle{w.pad, w.size} //.Inset(1)
-	w.Frame = frame.New(r, w.Frame.Font, w.b.RGBA(), w.Frame.Color)
+	w.Frame = frame.New(r, w.Frame.Font, w.b.RGBA(), w.Frame.Color, w.Frame.Flags())
 	w.init()
 	w.scrollinit(w.pad)
 	w.Refresh()
@@ -181,7 +181,7 @@ func (w *Win) SetFont(ft *font.Font) {
 		return
 	}
 	r := image.Rectangle{w.pad, w.size}
-	w.Frame = frame.New(r, ft, w.b.RGBA(), w.Frame.Color)
+	w.Frame = frame.New(r, ft, w.b.RGBA(), w.Frame.Color, w.Frame.Flags())
 	w.Resize(w.size)
 }
 
