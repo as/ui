@@ -11,14 +11,14 @@ import (
 	"golang.org/x/exp/shiny/screen"
 )
 
-type Item interface{
+type Item interface {
 	Buffer() screen.Buffer
 	Send(e interface{})
 	SendFirst(e interface{})
 	NextEvent() (e interface{})
 }
 
-type Win interface{
+type Win interface {
 	Item
 	Blank()
 	Bounds() image.Rectangle
