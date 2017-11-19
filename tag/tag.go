@@ -10,6 +10,7 @@ import (
 	"strings"
 	//	"time"
 	"path/filepath"
+	"sync"
 
 	"github.com/as/edit"
 	"github.com/as/event"
@@ -140,15 +141,28 @@ func (t *Tag) Move(pt image.Point) {
 }
 
 func (t *Tag) Resize(pt image.Point) {
+	var wg sync.WaitGroup
+	defer wg.Wait()
+
 	dy := TagSize(t.Win.Font)
 	if pt.X < dy || pt.Y < dy {
 		println("bad size request:", pt.String())
 		return
 	}
-	t.Win.Resize(image.Pt(pt.X, dy))
-	pt.Y -= dy
+	wg.Add(1)
+	go func() {
+		t.Win.Resize(image.Pt(pt.X, dy))
+		wg.Done()
+	}()
+
 	if t.Body != nil {
-		t.Body.Resize(pt)
+		pt := pt
+		pt.Y -= dy
+		wg.Add(1)
+		go func() {
+			t.Body.Resize(pt)
+			wg.Done()
+		}()
 	}
 }
 
