@@ -13,7 +13,6 @@ import (
 	"golang.org/x/mobile/event/mouse"
 	"image"
 	"image/draw"
-	"runtime"
 	"sync"
 )
 
@@ -49,9 +48,9 @@ type Win struct {
 	inverted int
 
 	donec    chan bool
-	workc    chan image.Rectangle
-	wg       sync.WaitGroup
-	workerwg sync.WaitGroup
+	workc    chan []image.Rectangle
+	wg       *sync.WaitGroup
+	workerwg *sync.WaitGroup
 
 	UserFunc func(*Win)
 }
@@ -75,43 +74,13 @@ func New(dev *ui.Dev, sp, size, pad image.Point, ft *font.Font, cols frame.Color
 		b:        b,
 		Editor:   ed,
 		UserFunc: func(w *Win) {},
+		wg: new(sync.WaitGroup),
+		workerwg: new(sync.WaitGroup),
 	}
-	w.makeg()
 	w.init()
 	w.scrollinit(pad)
+	
 	return w
-}
-
-func (w *Win) workerspawn() {
-	w.workerwg.Add(1)
-	go func() {
-		defer w.workerwg.Done()
-		for {
-			select {
-			case <-w.donec:
-				return
-			case r := <-w.workc:
-				w.Window().Upload(w.Sp.Add(r.Min), w.b, r)
-				w.wg.Done()
-			}
-		}
-	}()
-}
-
-func (w *Win) makeg() {
-	ncpu := runtime.NumCPU()
-
-	w.donec = make(chan bool)
-	w.workc = make(chan image.Rectangle, ncpu*8)
-
-	for i := 0; i < ncpu*2; i++ {
-		w.workerspawn()
-	}
-
-	go func() {
-		w.workerwg.Wait()
-		close(w.workc)
-	}()
 }
 
 func (w *Win) FuncInstall(fn func(*Win)) {
@@ -263,37 +232,31 @@ func (w *Win) Refresh() {
 	w.dirty = false
 }
 
-// Put
-func (w *Win) Upload() {
-	if !w.dirty {
-		return
-	}
-	cache := append([]image.Rectangle{}, w.Cache()...)
-	w.wg.Add(len(cache))
-	for _, r := range w.Cache() {
-		w.workc <- r
-	}
-	w.Flush()
-	w.wg.Wait()
-	w.dirty = false
-}
-
 // the old "Upload"
-func (w *Win) zUpload() {
+func (w *Win) Upload() {
+	var buf []image.Rectangle
+	func(){
+		if buf == nil{
+			buf = make([]image.Rectangle, 0, 1024)
+		}
+	}()
 	if !w.dirty {
 		return
 	}
 	var wg sync.WaitGroup
-	wg.Add(len(w.Cache()))
+	buf = buf[:0]
+	buf = append(buf, w.Cache()...)
+	wg.Add(len(buf))
 	sp := w.Sp
-	for _, r := range w.Cache() {
+	sw := w.Window()
+	for _, r := range buf {
 		go func(r image.Rectangle) {
-			w.Window().Upload(sp.Add(r.Min), w.b, r)
+			sw.Upload(sp.Add(r.Min), w.b, r)
 			wg.Done()
 		}(r)
 	}
-	wg.Wait()
 	w.Flush()
+	wg.Wait()
 	w.dirty = false
 }
 
