@@ -471,20 +471,40 @@ func (t *Tag) Handle(act text.Editor, e interface{}) {
 }
 
 func (t *Tag) Upload(wind screen.Window) {
+	var wg sync.WaitGroup
+	defer wg.Wait()
 	if t.Body != nil && t.Body.Dirty() {
-		t.Body.Upload()
+		wg.Add(1)
+		go func() {
+			t.Body.Upload()
+			wg.Done()
+		}()
 	}
 	if t.Win.Dirty() {
-		t.Win.Upload()
+		wg.Add(1)
+		go func() {
+			t.Win.Upload()
+			wg.Done()
+		}()
 	}
 }
 
 func (t *Tag) Refresh() {
+	var wg sync.WaitGroup
+	defer wg.Wait()
 	if t.Body != nil {
-		t.Body.Refresh()
+		wg.Add(1)
+		go func() {
+			t.Body.Refresh()
+			wg.Done()
+		}()
 	}
 	if t.Win.Dirty() {
-		t.Win.Refresh()
+		wg.Add(1)
+		go func() {
+			t.Win.Refresh()
+			wg.Done()
+		}()
 	}
 }
 
