@@ -2,6 +2,7 @@ package win
 
 import (
 	"github.com/as/frame"
+	"github.com/as/text"
 	"image"
 	"image/draw"
 )
@@ -40,16 +41,29 @@ func (w *Win) Scroll(dl int) {
 		w.SetOrigin(org, true)
 	}
 	w.updatesb()
+	w.drawsb()
 	w.dirty = true
 }
 
-/*
- */
+func region3(r, q0, q1 int) int {
+	return text.Region3(int64(r), int64(q0), int64(q1))
+}
 func (w *Win) Clicksb(pt image.Point, dir int) {
+	n := 0
+	for region3(pt.Y, w.bar.Min.Y-3, w.bar.Min.Y+3) != 0 {
+		if n == 5 {
+			break
+		}
+		w.clicksb(pt, dir)
+		n++
+	}
+	w.drawsb()
+	w.dirty = true
+}
+func (w *Win) clicksb(pt image.Point, dir int) {
 	var (
 		rat float64
 	)
-	//	pt.Y -= w.pad.Y
 	fl := float64(w.Frame.Len())
 	n := w.org
 	barY0 := float64(w.bar.Min.Y)
@@ -71,7 +85,6 @@ func (w *Win) Clicksb(pt image.Point, dir int) {
 	}
 	w.SetOrigin(n, false)
 	w.updatesb()
-	w.dirty = true
 }
 
 func (w *Win) realsbr(r image.Rectangle) image.Rectangle {
@@ -85,7 +98,7 @@ func (w *Win) drawsb() {
 
 func (w *Win) updatesb() {
 	r := w.Scrollr
-	dy := float64(w.Frame.Bounds().Dy() + w.pad.Y*2)
+	dy := float64(w.Frame.Bounds().Dy() - w.pad.Y)
 	rat0 := float64(w.org) / float64(w.Len()) // % scrolled
 	r.Min.Y = +int(dy * rat0)
 
@@ -96,5 +109,4 @@ func (w *Win) updatesb() {
 	}
 	w.dirty = true
 	w.bar = r
-	w.drawsb()
 }

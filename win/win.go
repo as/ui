@@ -16,10 +16,6 @@ import (
 	"sync"
 )
 
-const (
-	MsgSize = 64 * 1024
-)
-
 func (w *Win) Dirty() bool {
 	return w.dirty || (w.Frame != nil && w.Frame.Dirty())
 }
@@ -74,12 +70,12 @@ func New(dev *ui.Dev, sp, size, pad image.Point, ft *font.Font, cols frame.Color
 		b:        b,
 		Editor:   ed,
 		UserFunc: func(w *Win) {},
-		wg: new(sync.WaitGroup),
+		wg:       new(sync.WaitGroup),
 		workerwg: new(sync.WaitGroup),
 	}
 	w.init()
 	w.scrollinit(pad)
-	
+
 	return w
 }
 
@@ -206,7 +202,7 @@ func (w *Win) BackNL(p int64, n int) int64 {
 		if p == 0 {
 			break
 		}
-		for j := 128; j-1 > 0 && p > 0; p-- {
+		for j := 512; j-1 > 0 && p > 0; p-- {
 			j--
 			if p-1 < 0 || p-1 > w.Len() || w.Bytes()[p-1] == '\n' {
 				break
@@ -235,8 +231,8 @@ func (w *Win) Refresh() {
 // the old "Upload"
 func (w *Win) Upload() {
 	var buf []image.Rectangle
-	func(){
-		if buf == nil{
+	func() {
+		if buf == nil {
 			buf = make([]image.Rectangle, 0, 1024)
 		}
 	}()

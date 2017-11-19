@@ -11,14 +11,14 @@ func (w *Win) Fill() {
 	if w.Frame.Full() {
 		return
 	}
-	var rp [MsgSize]byte
 	for !w.Frame.Full() {
 		qep := w.org + w.Nchars
 		n := max(0, min(w.Len()-qep, 2000))
 		if n == 0 {
 			break
 		}
-		m := copy(rp[:], w.Bytes()[qep:qep+n])
+		rp := w.Bytes()[qep : qep+n]
+		m := len(rp)
 		nl := w.MaxLine() - w.Line()
 		m = 0
 		i := int64(0)
