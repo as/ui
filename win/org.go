@@ -9,7 +9,7 @@ func (w *Win) SetOrigin(org int64, exact bool) {
 	}
 	w.Mark()
 	if org > 0 && !exact {
-		for i := 0; i < 512 && org < w.Len(); i++ {
+		for i := 0; i < 2048 && org < w.Len(); i++ {
 			if w.Bytes()[org] == '\n' {
 				org++
 				break

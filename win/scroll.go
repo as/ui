@@ -37,7 +37,12 @@ func (w *Win) Scroll(dl int) {
 			return
 		}
 		r := w.Frame.Bounds()
-		org += w.IndexOf(image.Pt(r.Min.X, r.Min.Y+dl*w.Font.Dy()))
+		mul := int64(dl / w.Frame.Line())
+		if mul == 0{
+			mul++
+		}
+		dx := w.IndexOf(image.Pt(r.Min.X, r.Min.Y+dl*w.Font.Dy()))*mul
+		org += dx
 		w.SetOrigin(org, true)
 	}
 	w.updatesb()
@@ -51,7 +56,7 @@ func region3(r, q0, q1 int) int {
 func (w *Win) Clicksb(pt image.Point, dir int) {
 	n := 0
 	for region3(pt.Y, w.bar.Min.Y-3, w.bar.Min.Y+3) != 0 {
-		if n == 5 {
+		if n == 4 {
 			break
 		}
 		w.clicksb(pt, dir)
