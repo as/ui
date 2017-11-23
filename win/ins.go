@@ -21,19 +21,19 @@ func (w *Win) Insert(p []byte, q0 int64) (n int) {
 		w.org += q1 - q0
 	case -1:
 		// Insertion to the left
-		w.Frame.Insert(p[q1-w.org:], 0)
+		w.Frame.Insert(string(p[q1-w.org:]), 0)
 		w.org += w.org - q0
 		w.dirty = true
 	case 1:
-		w.Frame.Insert(p, q0-w.org)
+		w.Frame.Insert(string(p), q0-w.org)
 		w.dirty = true
 	case 0:
 		if q0 < w.org {
 			p0 := w.org - q0
-			w.Frame.Insert(p[p0:], 0)
+			w.Frame.Insert(string(p[p0:]), 0)
 			w.org += w.org - q0
 		} else {
-			w.Frame.Insert(p, q0-w.org)
+			w.Frame.Insert(string(p), q0-w.org)
 		}
 		w.dirty = true
 	}

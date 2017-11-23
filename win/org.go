@@ -9,7 +9,7 @@ func (w *Win) SetOrigin(org int64, exact bool) {
 	}
 	w.Mark()
 	if org > 0 && !exact {
-		for i := 0; i < 2048 && org < w.Len(); i++ {
+		for i := 0; i < 1024 && org < w.Len(); i++ {
 			if w.Bytes()[org] == '\n' {
 				org++
 				break
@@ -29,7 +29,7 @@ func (w *Win) setOrigin(org int64) {
 	switch text.Region5(org, org+fl, w.org, w.org+fl) {
 	case -1:
 		// Going down a bit
-		w.Frame.Insert(w.Bytes()[org:org+(w.org-org)], 0)
+		w.Frame.Insert(string(w.Bytes()[org:org+(w.org-org)]), 0)
 		w.org = org
 	case -2, 2:
 		w.Frame.Delete(0, w.Frame.Len())

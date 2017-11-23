@@ -32,7 +32,7 @@ func (w *Win) Fill() {
 			}
 			i++
 		}
-		w.Frame.Insert(rp[:i], w.Nchars)
+		w.Frame.Insert(string(rp[:i]), w.Nchars)
 		w.dirty = true
 	}
 }

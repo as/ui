@@ -66,6 +66,8 @@ type Tag struct {
 	escR      image.Rectangle
 	offset    int64
 	basedir   string
+	
+	hist text.Recorder
 }
 
 func (w *Tag) SetFont(ft *font.Font) {
@@ -126,9 +128,15 @@ func New(dev *ui.Dev, sp, size, pad image.Point, ft *font.Font, cols frame.Color
 	ft = font.Clone(ft, ft.Size())
 	ft.SetLetting(ft.Size() / 3)
 	w := win.New(dev, sp, size, pad, ft, frame.A)
-
 	wd, _ := os.Getwd()
-	return &Tag{sp: sp, Win: wtag, Body: w, basedir: wd}
+	
+	return &Tag{
+		sp: sp, 
+		Win: wtag, 
+		Body: w, 
+		basedir: wd,
+//		hist: text.NewRecorder(worm.NewLogger()),
+	}
 }
 
 func (t *Tag) Move(pt image.Point) {
