@@ -438,9 +438,9 @@ func (t *Tag) Handle(act text.Editor, e interface{}) {
 			if e.Modifiers == key.ModControl {
 				size := t.Body.Frame.Font.Size()
 				if key.CodeHyphenMinus == e.Code {
-					size -= 3
+					size -= 1
 				} else {
-					size += 3
+					size += 1
 				}
 				if size < 3 {
 					size = 6
