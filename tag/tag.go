@@ -433,6 +433,10 @@ func (t *Tag) Handle(act text.Editor, e interface{}) {
 		if e.Direction == 2 {
 			break
 		}
+		if e.Code == key.CodeI && e.Modifiers == key.ModControl {
+			runGoImports(t, e)
+			return
+		}
 		switch e.Code {
 		case key.CodeEqualSign, key.CodeHyphenMinus:
 			if e.Modifiers == key.ModControl {
