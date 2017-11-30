@@ -20,7 +20,7 @@ func runGoImports(t *Tag, e key.Event) {
 	cmd.Stdout = b
 	cmd.Run()
 	if b.Len() < len("package") {
-		t.Window().Send(fmt.Errorf("goimports failed", t.FileName()))
+		t.Window().Send(fmt.Errorf("goimports failed for: %q", t.FileName()))
 	}
 	q0, q1 := t.Body.Dot()
 	t.Body.Delete(0, t.Body.Len())
