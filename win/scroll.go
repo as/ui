@@ -75,7 +75,7 @@ func (w *Win) clicksb(pt image.Point, dir int) {
 		delta := int64(fl * rat)
 		n -= delta
 	case 0:
-		rat := float64(pt.Y)/float64(w.Scrollr.Dy())
+		rat := float64(pt.Y) / float64(w.Scrollr.Dy())
 		w.SetOrigin(int64(float64(w.Len())*rat), false)
 		w.updatesb()
 		return
@@ -92,83 +92,74 @@ func (w *Win) realsbr(r image.Rectangle) image.Rectangle {
 	return r.Add(w.Sp).Add(image.Pt(0, w.pad.Y))
 }
 
-func region5(r0,r1,q0,q1 int) int{
+func region5(r0, r1, q0, q1 int) int {
 	{
 		r0 := int64(r0)
 		r1 := int64(r1)
 		q0 := int64(q0)
 		q1 := int64(q1)
-		return text.Region5(r0,r1,q0,q1)
+		return text.Region5(r0, r1, q0, q1)
 	}
 }
 
 func (w *Win) drawsb() {
-	if w.Scrollr == image.ZR{
+	if w.Scrollr == image.ZR {
 		return
 	}
-	if w.bar == w.lastbar{
+	if w.bar == w.lastbar {
 		return
 	}
-	r0,r1,q0,q1 := w.bar.Min.Y, w.bar.Max.Y, w.lastbar.Min.Y, w.lastbar.Max.Y
+	r0, r1, q0, q1 := w.bar.Min.Y, w.bar.Max.Y, w.lastbar.Min.Y, w.lastbar.Max.Y
 	w.lastbar = w.bar
 	r := w.bar
 	w.dirty = true
-	switch region5(r0,r1,q0,q1){
+	switch region5(r0, r1, q0, q1) {
 	case -2, 2:
-		w.Frame.Draw(w.Frame.RGBA(), image.Rect(r.Min.X, q0, r.Max.X, q1) , frame.ATag0.Back, image.ZP, draw.Src)
-		w.Frame.Draw(w.Frame.RGBA(), image.Rect(r.Min.X, r0, r.Max.X, r1) , LtGray, image.ZP, draw.Src)
+		w.Frame.Draw(w.Frame.RGBA(), image.Rect(r.Min.X, q0, r.Max.X, q1), frame.ATag0.Back, image.ZP, draw.Src)
+		w.Frame.Draw(w.Frame.RGBA(), image.Rect(r.Min.X, r0, r.Max.X, r1), LtGray, image.ZP, draw.Src)
 	case -1:
-		//w.refreshsb()
-		w.Frame.Draw(w.Frame.RGBA(), image.Rect(r.Min.X, r1, r.Max.X, q1) , frame.ATag0.Back, image.ZP, draw.Src)
-		w.Frame.Draw(w.Frame.RGBA(), image.Rect(r.Min.X, r0, r.Max.X, q0) , LtGray, image.ZP, draw.Src)
+		w.Frame.Draw(w.Frame.RGBA(), image.Rect(r.Min.X, r1, r.Max.X, q1), frame.ATag0.Back, image.ZP, draw.Src)
+		w.Frame.Draw(w.Frame.RGBA(), image.Rect(r.Min.X, r0, r.Max.X, q0), LtGray, image.ZP, draw.Src)
 	case 1:
-		//w.refreshsb()
-		w.Frame.Draw(w.Frame.RGBA(), image.Rect(r.Min.X, q0, r.Max.X, r0) , frame.ATag0.Back, image.ZP, draw.Src)
-		w.Frame.Draw(w.Frame.RGBA(), image.Rect(r.Min.X, q1, r.Max.X, r1) , LtGray, image.ZP, draw.Src)
+		w.Frame.Draw(w.Frame.RGBA(), image.Rect(r.Min.X, q0, r.Max.X, r0), frame.ATag0.Back, image.ZP, draw.Src)
+		w.Frame.Draw(w.Frame.RGBA(), image.Rect(r.Min.X, q1, r.Max.X, r1), LtGray, image.ZP, draw.Src)
 	case 0:
 		col := frame.ATag0.Back // for a shrinking bar
-		
-		if r0 < q0{ // bar grows larger
+		if r0 < q0 {            // bar grows larger
 			col = LtGray
-			//w.Frame.Draw(w.Frame.RGBA(), image.Rect(r.Min.X, r0, r.Max.X, q0) , LtGray, image.ZP, draw.Src)
-			//w.Frame.Draw(w.Frame.RGBA(), image.Rect(r.Min.X, q1, r.Max.X, r1) , LtGray, image.ZP, draw.Src)
-		} else { // shrinks
-			//w.Frame.Draw(w.Frame.RGBA(), image.Rect(r.Min.X, r0, r.Max.X, q0) , frame.ATag0.Back, image.ZP, draw.Src)
-			//w.Frame.Draw(w.Frame.RGBA(), image.Rect(r.Min.X, q1, r.Max.X, r1) , frame.ATag0.Back, image.ZP, draw.Src)
 		}
-			w.Frame.Draw(w.Frame.RGBA(), image.Rect(r.Min.X, r0, r.Max.X, q0) , col, image.ZP, draw.Src)
-			w.Frame.Draw(w.Frame.RGBA(), image.Rect(r.Min.X, q1, r.Max.X, r1) , col, image.ZP, draw.Src)
-		//w.refreshsb()
+		w.Frame.Draw(w.Frame.RGBA(), image.Rect(r.Min.X, r0, r.Max.X, q0), col, image.ZP, draw.Src)
+		w.Frame.Draw(w.Frame.RGBA(), image.Rect(r.Min.X, q1, r.Max.X, r1), col, image.ZP, draw.Src)
 	}
 }
-func (w *Win) refreshsb(){
-		w.Frame.Draw(w.Frame.RGBA(), w.Scrollr, frame.ATag0.Back, image.ZP, draw.Src)
-		w.Frame.Draw(w.Frame.RGBA(), w.bar, LtGray, image.ZP, draw.Src)
+func (w *Win) refreshsb() {
+	w.Frame.Draw(w.Frame.RGBA(), w.Scrollr, frame.ATag0.Back, image.ZP, draw.Src)
+	w.Frame.Draw(w.Frame.RGBA(), w.bar, LtGray, image.ZP, draw.Src)
 }
 
 func (w *Win) updatesb() {
 	r := w.Scrollr
-	if r == image.ZR{
+	if r == image.ZR {
 		return
 	}
 	rat0 := float64(w.org) / float64(w.Len()) // % scrolled
 	r.Min.Y += int(float64(r.Max.Y) * rat0)
 
 	rat1 := float64(w.org+w.Frame.Len()) / float64(w.Len()) // % covered by screen
-	r.Max.Y = int(float64(r.Max.Y) * rat1)//int(dy * rat1)
-	if have := r.Max.Y-r.Min.Y; have < 3 {
-		r.Max.Y = r.Min.Y+3
+	r.Max.Y = int(float64(r.Max.Y) * rat1)                  //int(dy * rat1)
+	if have := r.Max.Y - r.Min.Y; have < 3 {
+		r.Max.Y = r.Min.Y + 3
 	}
 	w.dirty = true
-	r.Min.Y = clamp32(r.Min.Y,w.Scrollr.Min.Y, w.Scrollr.Max.Y)
+	r.Min.Y = clamp32(r.Min.Y, w.Scrollr.Min.Y, w.Scrollr.Max.Y)
 	r.Max.Y = clamp32(r.Max.Y, w.Scrollr.Min.Y, w.Scrollr.Max.Y)
 	w.bar = r
 }
-func clamp32(v, l, h int) int{
-	if v < l{
+func clamp32(v, l, h int) int {
+	if v < l {
 		return l
 	}
-	if v > h{
+	if v > h {
 		return h
 	}
 	return v
