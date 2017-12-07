@@ -153,6 +153,7 @@ func (w *Win) updatesb() {
 	w.dirty = true
 	r.Min.Y = clamp32(r.Min.Y, w.Scrollr.Min.Y, w.Scrollr.Max.Y)
 	r.Max.Y = clamp32(r.Max.Y, w.Scrollr.Min.Y, w.Scrollr.Max.Y)
+	w.lastbar = w.bar
 	w.bar = r
 }
 func clamp32(v, l, h int) int {
