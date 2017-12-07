@@ -114,7 +114,7 @@ func (w *Win) drawsb() {
 	r := w.bar
 	w.dirty = true
 	switch region5(r0, r1, q0, q1) {
-	case -2, 2:
+	case -2, 2, 0:
 		w.Frame.Draw(w.Frame.RGBA(), image.Rect(r.Min.X, q0, r.Max.X, q1), frame.ATag0.Back, image.ZP, draw.Src)
 		w.Frame.Draw(w.Frame.RGBA(), image.Rect(r.Min.X, r0, r.Max.X, r1), LtGray, image.ZP, draw.Src)
 	case -1:
@@ -123,13 +123,13 @@ func (w *Win) drawsb() {
 	case 1:
 		w.Frame.Draw(w.Frame.RGBA(), image.Rect(r.Min.X, q0, r.Max.X, r0), frame.ATag0.Back, image.ZP, draw.Src)
 		w.Frame.Draw(w.Frame.RGBA(), image.Rect(r.Min.X, q1, r.Max.X, r1), LtGray, image.ZP, draw.Src)
-	case 0:
-		col := frame.ATag0.Back // for a shrinking bar
-		if r0 < q0 {            // bar grows larger
-			col = LtGray
-		}
-		w.Frame.Draw(w.Frame.RGBA(), image.Rect(r.Min.X, r0, r.Max.X, q0), col, image.ZP, draw.Src)
-		w.Frame.Draw(w.Frame.RGBA(), image.Rect(r.Min.X, q1, r.Max.X, r1), col, image.ZP, draw.Src)
+		//	case 0:
+		//		col := frame.ATag0.Back // for a shrinking bar
+		//		if r0 < q0 {            // bar grows larger
+		//			col = LtGray
+		//		}
+		//		w.Frame.Draw(w.Frame.RGBA(), image.Rect(r.Min.X, r0, r.Max.X, q0), col, image.ZP, draw.Src)
+		//		w.Frame.Draw(w.Frame.RGBA(), image.Rect(r.Min.X, q1, r.Max.X, r1), col, image.ZP, draw.Src)
 	}
 }
 func (w *Win) refreshsb() {
