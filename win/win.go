@@ -40,11 +40,6 @@ type Win struct {
 	Sq       int64
 	inverted int
 
-	donec    chan bool
-	workc    chan []image.Rectangle
-	wg       *sync.WaitGroup
-	workerwg *sync.WaitGroup
-
 	UserFunc func(*Win)
 }
 
@@ -55,21 +50,42 @@ func (n *Win) Bounds() image.Rectangle {
 func (w *Win) Origin() int64 {
 	return w.org
 }
+func (w *Win) Draw(dst draw.Image, r image.Rectangle, src image.Image, sp image.Point, op draw.Op){
+	draw.Draw(dst,r,src,sp,op)
+}
+func (w *Win) Flush(r ...image.Rectangle) error{
+	if len(r) == 0{
+		w.Window().Upload(w.Sp.Add(w.b.Bounds().Min), w.b, w.b.Bounds())
+		return nil
+	}
+	var wg sync.WaitGroup
+	wg.Add(len(r))
+	for _, r := range r{
+		r := r
+		go func(){
+			w.Window().Upload(w.Sp.Add(r.Min), w.b, r)
+			wg.Done()
+		}()
+	}
+	wg.Wait()
+	return nil
+}
+func (w *Win) StringBG(dst draw.Image, p image.Point, src image.Image, sp image.Point, ft *font.Font, s []byte, bg image.Image, bgp image.Point) int{
+	return font.StringBG(dst,p,src,sp,ft,s,bg,bgp)
+}
 
 func New(dev *ui.Dev, sp, size, pad image.Point, ft *font.Font, cols frame.Color) *Win {
 	r := image.Rectangle{pad, size}
 	ed, _ := text.Open(text.NewBuffer())
 	b := dev.NewBuffer(size)
 	w := &Win{
-		Frame:    frame.New(r, ft, b.RGBA(), cols),
 		Node:     Node{Sp: sp, size: size, pad: pad},
 		Dev:      dev,
 		b:        b,
 		Editor:   ed,
 		UserFunc: func(w *Win) {},
-		wg:       new(sync.WaitGroup),
-		workerwg: new(sync.WaitGroup),
 	}
+	w.Frame =  frame.NewDrawer(r, ft, b.RGBA(), cols, w)
 	w.init()
 	w.scrollinit(pad)
 
@@ -115,10 +131,6 @@ func (w *Win) Close() error {
 		w.Editor.Close()
 		w.Editor = nil
 	}
-	if w.donec != nil {
-		close(w.donec)
-		w.donec = nil
-	}
 	return nil
 }
 
@@ -128,7 +140,7 @@ func (w *Win) Resize(size image.Point) {
 	w.b.Release()
 	w.b = b
 	r := image.Rectangle{w.pad, w.size} //.Inset(1)
-	w.Frame = frame.New(r, w.Frame.Font, w.b.RGBA(), w.Frame.Color, w.Frame.Flags())
+	w.Frame = frame.NewDrawer(r, w.Frame.Font, w.b.RGBA(), w.Frame.Color, w, w.Frame.Flags())
 	w.init()
 	w.scrollinit(w.pad)
 	w.Refresh()
@@ -143,7 +155,7 @@ func (w *Win) SetFont(ft *font.Font) {
 		return
 	}
 	r := image.Rectangle{w.pad, w.size}
-	w.Frame = frame.New(r, ft, w.b.RGBA(), w.Frame.Color, w.Frame.Flags())
+	w.Frame = frame.NewDrawer(r, w.Frame.Font, w.b.RGBA(), w.Frame.Color, w, w.Frame.Flags())
 	w.Resize(w.size)
 }
 
@@ -220,36 +232,15 @@ func (w *Win) filldebug() {
 func (w *Win) Refresh() {
 	w.Frame.Refresh()
 	w.UserFunc(w)
-	w.Window().Upload(w.Sp, w.b, w.b.Bounds())
+	//w.Window().Upload(w.Sp, w.b, w.b.Bounds())
 	w.Flush()
 	w.dirty = false
 }
 
 // the old "Upload"
 func (w *Win) Upload() {
-	var buf []image.Rectangle
-	func() {
-		if buf == nil {
-			buf = make([]image.Rectangle, 0, 1024)
-		}
-	}()
-	if !w.dirty {
-		return
-	}
-	var wg sync.WaitGroup
-	buf = buf[:0]
-	buf = append(buf, w.Cache()...)
-	wg.Add(len(buf))
-	sp := w.Sp
-	sw := w.Window()
-	for _, r := range buf {
-		go func(r image.Rectangle) {
-			sw.Upload(sp.Add(r.Min), w.b, r)
-			wg.Done()
-		}(r)
-	}
-	w.Flush()
-	wg.Wait()
+//	w.Flush()
+//	w.Window().Upload(w.Sp.Add(w.b.Bounds().Min), w.b, w.b.Bounds())
 	w.dirty = false
 }
 
