@@ -2,7 +2,6 @@ package tag
 
 import (
 	"bytes"
-	"fmt"
 	"os/exec"
 	"strings"
 
@@ -11,7 +10,7 @@ import (
 
 func runGoImports(t *Tag, e key.Event) {
 	if !strings.HasSuffix(t.FileName(), ".go") {
-		t.Window().Send(fmt.Errorf("Wont run goimports, file is %q", t.FileName()))
+		//		t.Window().Send(fmt.Errorf("Wont run goimports, file is %q", t.FileName()))
 		return
 	}
 	cmd := exec.Command("goimports")
@@ -20,7 +19,7 @@ func runGoImports(t *Tag, e key.Event) {
 	cmd.Stdout = b
 	cmd.Run()
 	if b.Len() < len("package") {
-		t.Window().Send(fmt.Errorf("goimports failed for: %q", t.FileName()))
+		//		t.Window().Send(fmt.Errorf("goimports failed for: %q", t.FileName()))
 	}
 	q0, q1 := t.Body.Dot()
 	t.Body.Delete(0, t.Body.Len())

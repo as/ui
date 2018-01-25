@@ -13,40 +13,16 @@ import (
 	"sync"
 
 	"github.com/as/edit"
-	"github.com/as/event"
 	"github.com/as/frame"
-	"github.com/as/frame/font"
 	"github.com/as/path"
+	"github.com/as/shrew"
 	"github.com/as/text"
 	"github.com/as/text/action"
 	"github.com/as/text/find"
-	"github.com/as/text/kbd"
-	mus "github.com/as/text/mouse"
-	"github.com/as/ui"
 	"github.com/as/ui/win"
+	"golang.org/x/image/font"
 	//"github.com/as/worm"
-	"golang.org/x/exp/shiny/screen"
-	"golang.org/x/mobile/event/key"
-	"golang.org/x/mobile/event/mouse"
 )
-
-var db = win.Db
-var un = win.Un
-var trace = win.Trace
-
-func p(e mouse.Event) image.Point {
-	return image.Pt(int(e.X), int(e.Y))
-
-}
-
-type doter interface {
-	Dot() (int64, int64)
-}
-
-func whatsdot(d doter) string {
-	q0, q1 := d.Dot()
-	return fmt.Sprintf("Dot: [%d:%d]", q0, q1)
-}
 
 // Put
 var (
@@ -68,8 +44,8 @@ type Tag struct {
 	basedir   string
 }
 
-func (w *Tag) SetFont(ft *font.Font) {
-	if ft.Size() < 3 || w.Body == nil {
+func (w *Tag) SetFont(ft font.Face) {
+	if frame.Dy(ft) < 3 || w.Body == nil {
 		return
 	}
 	w.Body.SetFont(ft)
@@ -88,16 +64,17 @@ func (t *Tag) Mark() {
 }
 
 func (t *Tag) Loc() image.Rectangle {
-	r := t.Win.Loc()
+	r := t.Win.Bounds()
 	if t.Body != nil {
-		r.Max.Y += t.Body.Loc().Dy()
+		r.Max.Y += t.Body.Bounds().Dy()
 	}
 	return r
 }
 
 // TagSize returns the size of a tag given the font
-func TagSize(ft *font.Font) int {
-	return ft.Dy() + ft.Dy()/2
+func TagSize(ft font.Face) int {
+	dy := frame.Dy(ft)
+	return dy + dy/2
 }
 
 // TagPad returns the padding for the tag given the window's padding
@@ -106,14 +83,54 @@ func TagPad(wpad image.Point) image.Point {
 	return image.Pt(wpad.X, 3)
 }
 
+type Config struct {
+	TagHeight int
+	TagColor  *frame.Color
+	FontFunc  func(int) font.Face
+	FontSize  int
+	Drawer    frame.Drawer
+	Flag      int
+	Pad       image.Point
+	Color     *frame.Color
+}
+
+func (c *Config) check() {
+	if c.FontFunc == nil {
+		c.FontFunc = frame.NewGoMono
+	}
+	if c.FontSize == 0 {
+		c.FontSize = 11
+	}
+	if c.TagHeight == 0 {
+		c.TagHeight = c.FontSize + c.FontSize/2
+	}
+	if c.TagColor == nil {
+		c.TagColor = &frame.ATag1
+	}
+	if c.Color == nil {
+		c.Color = &frame.A
+	}
+	if c.Pad == image.ZP {
+		c.Pad = image.Pt(15, 15)
+	}
+}
+
 // Put
-func New(dev *ui.Dev, sp, size, pad image.Point, ft *font.Font, cols frame.Color) *Tag {
-
+func New(c *shrew.Client, sp, size image.Point, conf *Config) *Tag {
+	if conf == nil {
+		conf = &Config{}
+	}
+	conf.check()
 	// Make the main tag
-	tagY := TagSize(ft)
+	tagY := conf.TagHeight
 
-	// Make tag
-	wtag := win.New(dev, sp, image.Pt(size.X, tagY), TagPad(pad), ft, cols)
+	wtag := win.New(c, sp, image.Pt(size.X, tagY), &win.Config{
+		Flag:   conf.Flag,
+		Pad:    image.Pt(2, 2),
+		Face:   conf.FontFunc(11),
+		Drawer: conf.Drawer,
+		Color:  conf.TagColor,
+	})
 
 	sp = sp.Add(image.Pt(0, tagY))
 	size = size.Sub(image.Pt(0, tagY))
@@ -122,49 +139,33 @@ func New(dev *ui.Dev, sp, size, pad image.Point, ft *font.Font, cols frame.Color
 	}
 
 	// Make window
-	cols.Back = Yellow
-	ft = font.Clone(ft, ft.Size())
-	ft.SetLetting(ft.Size() / 3)
-	w := win.New(dev, sp, size, pad, ft, frame.A)
+	//	cols.Back = Yellow
+	//	ft = font.Clone(ft, ft.Size())
+	//	ft.SetLetting(ft.Size() / 3)
+	w := win.New(c, sp, size, &win.Config{
+		Flag:   conf.Flag,
+		Pad:    conf.Pad,
+		Face:   conf.FontFunc(conf.FontSize),
+		Color:  conf.Color,
+		Drawer: conf.Drawer,
+	})
 
 	wd, _ := os.Getwd()
 	return &Tag{sp: sp, Win: wtag, Body: w, basedir: wd}
 }
 
 func (t *Tag) Move(pt image.Point) {
-	t.Win.Move(pt)
-	if t.Body == nil {
-		return
-	}
-	pt.Y += t.Win.Loc().Dy()
-	t.Body.Move(pt)
+	/*
+		t.Win.Move(pt)
+		if t.Body == nil {
+			return
+		}
+		pt.Y += t.Win.Loc().Dy()
+		t.Body.Move(pt)
+	*/
 }
 
-func (t *Tag) Resize(pt image.Point) {
-	var wg sync.WaitGroup
-	defer wg.Wait()
-
-	dy := TagSize(t.Win.Font)
-	if pt.X < dy || pt.Y < dy {
-		println("bad size request:", pt.String())
-		return
-	}
-	wg.Add(1)
-	go func() {
-		t.Win.Resize(image.Pt(pt.X, dy))
-		wg.Done()
-	}()
-
-	if t.Body != nil {
-		pt := pt
-		pt.Y -= dy
-		wg.Add(1)
-		go func() {
-			t.Body.Resize(pt)
-			wg.Done()
-		}()
-	}
-}
+func (t *Tag) Resize(pt image.Point) {}
 
 func mustCompile(prog string) *edit.Command {
 	p, err := edit.Compile(prog)
@@ -181,15 +182,7 @@ func (t *Tag) Open(basepath, title string) {
 	t.Get(title)
 }
 
-func (t *Tag) Close() (err error) {
-	if t.Body != nil {
-		err = t.Body.Close()
-	}
-	if t.Win != nil {
-		err = t.Win.Close()
-	}
-	return err
-}
+func (t *Tag) Close() (err error) { return nil }
 
 func (t *Tag) Dir() string {
 	x := path.DirOf(t.FileName())
@@ -207,7 +200,7 @@ func (t *Tag) fixtag(abs string) {
 		maint = int64(len(p))
 	}
 	wtag.Delete(0, maint+1)
-	wtag.InsertString(abs+"\tPut Del |", 0)
+	wtag.Insert([]byte(abs+"\tPut Del |"), 0)
 	wtag.Refresh()
 }
 func (t *Tag) getbody(abs, addr string) {
@@ -217,14 +210,14 @@ func (t *Tag) getbody(abs, addr string) {
 	w.Select(0, 0)
 	w.SetOrigin(0, true)
 	if addr != "" {
-		w.SendFirst(mustCompile(addr))
+		//		w.SendFirst(mustCompile(addr))
 	}
 }
 
 func (t *Tag) Get(name string) {
 	w := t.Body
 	if w == nil {
-		w.SendFirst(fmt.Errorf("tag: window has no body for get request %q\n", name))
+		//		w.SendFirst(fmt.Errorf("tag: window has no body for get request %q\n", name))
 		return
 	}
 	if name == "" {
@@ -280,218 +273,14 @@ func (t *Tag) Put() (err error) {
 	if name == "" {
 		return fmt.Errorf("no file")
 	}
-	t.Window().Send(fmt.Errorf("Put %q", name))
+	//	t.Window().Send(fmt.Errorf("Put %q", name))
 	writefile(name, t.Body.Bytes())
 	return nil
 }
-func pt(e mouse.Event) image.Point {
-	return image.Pt(int(e.X), int(e.Y))
-}
-func (t *Tag) Mouse(act text.Editor, e interface{}) {
-	win := act.(*win.Win)
-	if act := win; true {
-		org := act.Origin()
-		switch e := e.(type) {
-		case mus.SnarfEvent:
-			snarf(act)
-		case mus.InsertEvent:
-			paste(act)
-		case mus.MarkEvent:
-			if e.Button != 1 {
-				t.r0, t.r1 = act.Dot()
-			}
-			q0 := org + act.IndexOf(p(e.Event))
-			q1 := q0
-			act.Sq = q0
-			if e.Button == 1 && e.Double {
-				q0, q1 = find.FreeExpand(act, q0)
-				t.escR = image.Rect(-3, -3, 3, 3).Add(pt(e.Event))
-			}
-			act.Select(q0, q1)
-		case mus.SweepEvent:
-			if t.escR != image.ZR {
-				if pt(e.Event).In(t.escR) {
-					break
-				}
-				t.escR = image.ZR
-				act.Select(act.Sq, act.Sq)
-			}
-			q0, q1 := act.Dot()
-			//r0 := org+act.IndexOf(p(e.Event))
-			sweeper := text.Sweeper(act)
-			if act == t.Win {
-				sweeper = mus.NewNopScroller(act)
-			}
-			act.Sq, q0, q1 = mus.Sweep(sweeper, e, 15, act.Sq, q0, q1, act)
-			if e.Button == 1 {
-				act.Select(q0, q1)
-			} else {
-				act.Select(q0, q1)
-			}
-		case mus.SelectEvent:
-			q0, q1 := act.Dot()
-			if e.Button == 1 {
-				act.Select(q0, q1)
-				break
-			}
-			if e.Button == 2 || e.Button == 3 {
-				q0, q1 := act.Dot()
-				if q0 == q1 && text.Region3(q0, t.r0-1, t.r1) == 0 {
-					// just use the existing selection and look
-					q0, q1 = t.r0, t.r1
-					act.Select(q0, q1)
-				}
-				if q0 == q1 {
-					q0, q1 = find.ExpandFile(act.Bytes(), q0)
-				}
-
-				from := text.Editor(act)
-				if from == t.Win {
-					from = t
-				}
-				if e.Button == 3 {
-					act.Select(q0, q1)
-					act.SendFirst(event.Look{
-						Rec: event.Rec{
-							Q0: q0,
-							Q1: q1,
-							P:  act.Bytes()[q0:q1],
-						},
-						From:    from,
-						To:      []event.Editor{t.Body},
-						Basedir: t.basedir,
-						Name:    t.FileName(),
-					})
-				} else {
-					act.SendFirst(event.Cmd{
-						Rec: event.Rec{
-							Q0: q0, Q1: q1,
-							P: act.Bytes()[q0:q1],
-						},
-						From:    from,
-						To:      []event.Editor{t.Body},
-						Basedir: t.basedir,
-						Name:    t.FileName(),
-					})
-				}
-			}
-		}
-	}
-}
+func (t *Tag) Mouse(act text.Editor, e interface{}) {}
 
 // Put
-func (t *Tag) Handle(act text.Editor, e interface{}) {
-	switch e := e.(type) {
-	case mus.MarkEvent, mus.SweepEvent, mus.SelectEvent, mus.SnarfEvent, mus.InsertEvent:
-		t.Mouse(act, e)
-	case string:
-		if e == "Redo" {
-			//			act.Redo()
-		} else if e == "Undo" {
-			/*
-				ev, err := t.Log.ReadAt(t.Log.Len()-1-t.offset)
-				t.offset++
-				if err != nil{
-					t.SendFirst(err)
-					return
-				}
-				ev2 := event.Invert(ev)
-				switch ev2 := ev2.(type){
-				case *event.Insert:
-				t.Send(fmt.Errorf("INsert %#v\n", ev))
-					act.Insert(ev2.P, ev2.Q0)
-				case *event.Delete:
-					q0,q1 := ev2.Q0, ev2.Q1
-					if q0 > q1{
-						q0,q1=q1,q0
-					}
-					if q0 != q1{
-						q1--
-					}
-				t.Send(fmt.Errorf("Delete %#v\n", ev))
-					act.Delete(q0,q1)
-				}
-				t.Send(fmt.Errorf("%#v\n", ev))
-			*/
-			//			act.Undo()
-		} else if e == "Put" {
-			t.Put()
-		} else if e == "Get" {
-			t.Get(t.FileName())
-		}
-		t.Mark()
-	case *edit.Command:
-		if e == nil {
-			break
-		}
-		fn := e.Func()
-		if fn != nil {
-			fn(t.Body) // Always execute on body for now
-		}
-		t.Mark()
-	case key.Event:
-		if e.Direction == 2 {
-			break
-		}
-		if e.Code == key.CodeI && e.Modifiers == key.ModControl {
-			runGoImports(t, e)
-			return
-		}
-		switch e.Code {
-		case key.CodeEqualSign, key.CodeHyphenMinus:
-			if e.Modifiers == key.ModControl {
-				size := t.Body.Frame.Font.Size()
-				if key.CodeHyphenMinus == e.Code {
-					size -= 1
-				} else {
-					size += 1
-				}
-				if size < 3 {
-					size = 6
-				}
-				t.SetFont(t.Body.Frame.Font.NewSize(size))
-				return
-			}
-		}
-		ntab := int64(-1)
-		if (e.Rune == '\n' || e.Rune == '\r') && act == t.Body {
-			q0, q1 := act.Dot()
-			if q0 == q1 {
-				p := act.Bytes()
-				l0, _ := find.Findlinerev(p, q0, 0)
-				ntab = find.Accept(p, l0, []byte{'\t'})
-				ntab -= l0 + 1
-			}
-		}
-		kbd.SendClient(act, e)
-		for ntab >= 0 {
-			e.Rune = '\t'
-			kbd.SendClient(act, e)
-			ntab--
-		}
-		t.Mark()
-	}
-	t.dirty = true
-}
-
-func (t *Tag) Upload(wind screen.Window) {
-	var wg sync.WaitGroup
-	defer wg.Wait()
-	if t.Body != nil && t.Body.Dirty() {
-		wg.Add(1)
-		go func() {
-			t.Body.Upload()
-			wg.Done()
-		}()
-	}
-	if t.Win.Dirty() {
-		wg.Add(1)
-		go func() {
-			t.Win.Upload()
-			wg.Done()
-		}()
-	}
-}
+func (t *Tag) Handle(act text.Editor, e interface{}) {}
 
 func (t *Tag) Refresh() {
 	var wg sync.WaitGroup

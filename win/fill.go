@@ -1,12 +1,5 @@
 package win
 
-func (w *Win) fixEnd() {
-	fr := w.Frame.Bounds()
-	if pt := w.PointOf(w.Frame.Len()); pt.Y != fr.Max.Y {
-		w.Paint(pt, fr.Max, w.Frame.Color.Palette.Back)
-	}
-}
-
 func (w *Win) Fill() {
 	if w.Frame.Full() {
 		return
@@ -33,6 +26,6 @@ func (w *Win) Fill() {
 			i++
 		}
 		w.Frame.Insert(rp[:i], w.Nchars)
-		w.dirty = true
 	}
+	w.Flush()
 }

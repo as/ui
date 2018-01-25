@@ -39,7 +39,7 @@ func (t *Tag) readfile(s string) (p []byte) {
 			ni, nj := fi[i].Name(), fi[j].Name()
 			return strings.Compare(ni, nj) < 0
 		})
-		dx := t.Body.Font.MeasureByte('e')
+		dx := 10 // t.Body.Font.MeasureByte('e')
 		x := 0
 		b := new(bytes.Buffer)
 		w := b
