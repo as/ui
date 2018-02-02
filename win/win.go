@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"github.com/as/frame"
 	"github.com/as/frame/font"
+	"github.com/as/shiny/screen"
 	"github.com/as/text"
 	"github.com/as/ui"
-	"golang.org/x/exp/shiny/screen"
 	"golang.org/x/mobile/event/mouse"
 	"image"
 	"image/draw"
@@ -227,6 +227,14 @@ func (w *Win) Refresh() {
 
 // the old "Upload"
 func (w *Win) Upload() {
+	if !w.dirty {
+		return
+	}
+	w.Window().Upload(w.Sp, w.b, w.b.Bounds())
+	w.Flush()
+	w.dirty = false
+	return
+
 	var buf []image.Rectangle
 	func() {
 		if buf == nil {

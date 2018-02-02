@@ -4,9 +4,9 @@ import (
 	"image"
 	"image/draw"
 
+	"github.com/as/shiny/screen"
 	"github.com/as/text"
 	"github.com/as/ui"
-	"golang.org/x/exp/shiny/screen"
 	"golang.org/x/mobile/event/mouse"
 )
 
