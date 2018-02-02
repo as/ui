@@ -9,29 +9,29 @@ import (
 	"golang.org/x/mobile/event/key"
 )
 
-type ErrGoImports struct{
-	Path string
+type ErrGoImports struct {
+	Path  string
 	GoExt bool
-	Err error
+	Err   error
 }
-func (e ErrGoImports) Error() string{
+
+func (e ErrGoImports) Error() string {
 	m := e.Err.Error()
-	if m == "" && !e.GoExt{
+	if m == "" && !e.GoExt {
 		m = "not a go file"
 	}
 	n := strings.Index(m, "<standard input>")
-	if n != -1{
-		m=strings.Replace(m, "<standard input>", e.Path, -1)
+	if n != -1 {
+		m = strings.Replace(m, "<standard input>", e.Path, -1)
 	} else {
-		m=e.Path+":"+m
+		m = e.Path + ":" + m
 	}
 	return fmt.Sprintf("goimports: %s", m)
 }
 
-
 func runGoImports(t *Tag, e key.Event) {
 	ee := &ErrGoImports{
-		Path: t.FileName(),
+		Path:  t.FileName(),
 		GoExt: !strings.HasSuffix(t.FileName(), ".go"),
 	}
 	cmd := exec.Command("goimports")
@@ -45,8 +45,8 @@ func runGoImports(t *Tag, e key.Event) {
 		if err == nil {
 			ee.Err = fmt.Errorf("file too short")
 		} else {
-			if berr.Len() != 0{
-				ee.Err=fmt.Errorf(berr.String())
+			if berr.Len() != 0 {
+				ee.Err = fmt.Errorf(berr.String())
 			} else {
 				ee.Err = err
 			}

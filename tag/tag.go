@@ -25,7 +25,7 @@ import (
 	"github.com/as/ui"
 	"github.com/as/ui/win"
 	//"github.com/as/worm"
-	"golang.org/x/exp/shiny/screen"
+	"github.com/as/shiny/screen"
 	"golang.org/x/mobile/event/key"
 	"golang.org/x/mobile/event/mouse"
 )

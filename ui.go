@@ -7,8 +7,8 @@ package ui
 import (
 	"image"
 
-	"golang.org/x/exp/shiny/driver"
-	"golang.org/x/exp/shiny/screen"
+	"github.com/as/shiny/driver"
+	"github.com/as/shiny/screen"
 )
 
 type Item interface {
