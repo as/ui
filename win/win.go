@@ -2,8 +2,8 @@ package win
 
 import (
 	"fmt"
+	"github.com/as/font"
 	"github.com/as/frame"
-	"github.com/as/frame/font"
 	"github.com/as/shiny/screen"
 	"github.com/as/text"
 	"github.com/as/ui"
@@ -56,12 +56,12 @@ func (w *Win) Origin() int64 {
 	return w.org
 }
 
-func New(dev *ui.Dev, sp, size, pad image.Point, ft *font.Font, cols frame.Color) *Win {
+func New(dev *ui.Dev, sp, size, pad image.Point, ft font.Face, cols frame.Color) *Win {
 	r := image.Rectangle{pad, size}
 	ed, _ := text.Open(text.NewBuffer())
 	b := dev.NewBuffer(size)
 	w := &Win{
-		Frame:    frame.New(r, ft, b.RGBA(), cols),
+		Frame:    frame.New(b.RGBA(), r, &frame.Config{Font: ft, Color: cols}),
 		Node:     Node{Sp: sp, size: size, pad: pad},
 		Dev:      dev,
 		b:        b,
@@ -128,7 +128,7 @@ func (w *Win) Resize(size image.Point) {
 	w.b.Release()
 	w.b = b
 	r := image.Rectangle{w.pad, w.size} //.Inset(1)
-	w.Frame = frame.New(r, w.Frame.Font, w.b.RGBA(), w.Frame.Color, w.Frame.Flags())
+	w.Frame = frame.New(w.b.RGBA(), r, &frame.Config{Font: w.Frame.Font, Color: w.Frame.Color, Flag: w.Frame.Flags()})
 	w.init()
 	w.scrollinit(w.pad)
 	w.Refresh()
@@ -138,12 +138,12 @@ func (w *Win) Move(sp image.Point) {
 	w.Sp = sp
 }
 
-func (w *Win) SetFont(ft *font.Font) {
-	if ft.Size() < 4 {
+func (w *Win) SetFont(ft font.Face) {
+	if ft.Height() < 4 {
 		return
 	}
 	r := image.Rectangle{w.pad, w.size}
-	w.Frame = frame.New(r, ft, w.b.RGBA(), w.Frame.Color, w.Frame.Flags())
+	w.Frame = frame.New(w.b.RGBA(), r, &frame.Config{Font: ft, Color: w.Frame.Color, Flag: w.Frame.Flags()})
 	w.Resize(w.size)
 }
 
@@ -234,31 +234,6 @@ func (w *Win) Upload() {
 	w.Flush()
 	w.dirty = false
 	return
-
-	var buf []image.Rectangle
-	func() {
-		if buf == nil {
-			buf = make([]image.Rectangle, 0, 1024)
-		}
-	}()
-	if !w.dirty {
-		return
-	}
-	var wg sync.WaitGroup
-	buf = buf[:0]
-	buf = append(buf, w.Cache()...)
-	wg.Add(len(buf))
-	sp := w.Sp
-	sw := w.Window()
-	for _, r := range buf {
-		go func(r image.Rectangle) {
-			sw.Upload(sp.Add(r.Min), w.b, r)
-			wg.Done()
-		}(r)
-	}
-	w.Flush()
-	wg.Wait()
-	w.dirty = false
 }
 
 func (w *Win) ReadAt(off int64, p []byte) (n int, err error) {
