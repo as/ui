@@ -3,8 +3,6 @@ package tag
 import (
 	"bytes"
 	"fmt"
-	window "github.com/as/ms/win"
-	"image"
 	"io"
 	"io/ioutil"
 	"log"
@@ -13,7 +11,6 @@ import (
 	"strings"
 
 	"github.com/as/clip"
-	"github.com/as/cursor"
 	"github.com/as/frame"
 )
 
@@ -88,7 +85,4 @@ func init() {
 	if err != nil {
 		panic(err)
 	}
-}
-func moveMouse(pt image.Point) {
-	cursor.MoveTo(window.ClientAbs().Min.Add(pt))
 }

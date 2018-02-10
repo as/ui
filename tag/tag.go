@@ -30,29 +30,13 @@ import (
 	"golang.org/x/mobile/event/mouse"
 )
 
-var db = win.Db
-var un = win.Un
-var trace = win.Trace
-
 func p(e mouse.Event) image.Point {
 	return image.Pt(int(e.X), int(e.Y))
 
 }
 
-type doter interface {
-	Dot() (int64, int64)
-}
-
-func whatsdot(d doter) string {
-	q0, q1 := d.Dot()
-	return fmt.Sprintf("Dot: [%d:%d]", q0, q1)
-}
-
-// Put
 var (
 	Buttonsdown = 0
-	noselect    bool
-	lastclickpt image.Point
 )
 
 type Tag struct {
@@ -60,12 +44,12 @@ type Tag struct {
 	Body      *win.Win
 	sp        image.Point
 	Scrolling bool
-	scrolldy  int
-	dirty     bool
-	r0, r1    int64
-	escR      image.Rectangle
-	offset    int64
-	basedir   string
+
+	dirty  bool
+	r0, r1 int64
+	escR   image.Rectangle
+
+	basedir string
 }
 
 func (w *Tag) SetFont(ft font.Face) {
@@ -124,8 +108,8 @@ func New(dev *ui.Dev, sp, size, pad image.Point, ft font.Face, cols frame.Color)
 	// Make window
 	cols.Back = Yellow
 	ft = font.NewFace(ft.Height())
-//	ft = font.Clone(ft, ft.Height()())	// TODO(as): bug zone
-//	ft.SetLetting(ft.Height()() / 3)
+	//	ft = font.Clone(ft, ft.Height()())	// TODO(as): bug zone
+	//	ft.SetLetting(ft.Height()() / 3)
 	w := win.New(dev, sp, size, pad, ft, frame.A)
 
 	wd, _ := os.Getwd()
@@ -523,8 +507,4 @@ func isdir(path string) bool {
 		return false
 	}
 	return fi.IsDir()
-}
-func isfile(path string) bool {
-	_, err := os.Stat(path)
-	return err == nil
 }

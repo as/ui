@@ -3,7 +3,6 @@ package tag
 import (
 	"image"
 	"image/color"
-	"image/draw"
 )
 
 var (
@@ -19,10 +18,3 @@ var (
 	Gray   = image.NewUniform(color.RGBA{66, 66, 66, 255})
 	Mauve  = image.NewUniform(color.RGBA{0x99, 0x99, 0xDD, 255})
 )
-
-func drawBorder(dst draw.Image, r image.Rectangle, src image.Image, sp image.Point, thick int) {
-	draw.Draw(dst, image.Rect(r.Min.X, r.Min.Y, r.Max.X, r.Min.Y+thick), src, sp, draw.Src)
-	draw.Draw(dst, image.Rect(r.Min.X, r.Max.Y-thick, r.Max.X, r.Max.Y), src, sp, draw.Src)
-	draw.Draw(dst, image.Rect(r.Min.X, r.Min.Y, r.Min.X+thick, r.Max.Y), src, sp, draw.Src)
-	draw.Draw(dst, image.Rect(r.Max.X-thick, r.Min.Y, r.Max.X, r.Max.Y), src, sp, draw.Src)
-}
