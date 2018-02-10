@@ -53,9 +53,6 @@ func (w *Win) Scroll(dl int) {
 	w.dirty = true
 }
 
-func region3(r, q0, q1 int) int {
-	return text.Region3(int64(r), int64(q0), int64(q1))
-}
 func (w *Win) Clicksb(pt image.Point, dir int) {
 	w.clicksb(pt, dir)
 	w.drawsb()
@@ -86,10 +83,6 @@ func (w *Win) clicksb(pt image.Point, dir int) {
 	}
 	w.SetOrigin(n, false)
 	w.updatesb()
-}
-
-func (w *Win) realsbr(r image.Rectangle) image.Rectangle {
-	return r.Add(w.Sp).Add(image.Pt(0, w.pad.Y))
 }
 
 func region5(r0, r1, q0, q1 int) int {

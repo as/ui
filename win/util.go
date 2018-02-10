@@ -1,13 +1,9 @@
 package win
 
-/*
- */
-
 import (
 	"fmt"
 	"image"
 	"image/color"
-	"image/draw"
 )
 
 var Db = new(Dbg)
@@ -40,15 +36,6 @@ func (p *Dbg) Trace(a ...interface{}) {
 	fmt.Println(a...)
 }
 
-type doter interface {
-	Dot() (int64, int64)
-}
-
-func whatsdot(d doter) string {
-	q0, q1 := d.Dot()
-	return fmt.Sprintf("Dot: [%d:%d]", q0, q1)
-}
-
 func (w *Win) InsertString(s string, q0 int64) int {
 	return w.Insert([]byte(s), q0)
 }
@@ -75,13 +62,6 @@ func clamp(v, l, h int64) int64 {
 		return h
 	}
 	return v
-}
-
-func drawBorder(dst draw.Image, r image.Rectangle, src image.Image, sp image.Point, thick int) {
-	draw.Draw(dst, image.Rect(r.Min.X, r.Min.Y, r.Max.X, r.Min.Y+thick), src, sp, draw.Src)
-	draw.Draw(dst, image.Rect(r.Min.X, r.Max.Y-thick, r.Max.X, r.Max.Y), src, sp, draw.Src)
-	draw.Draw(dst, image.Rect(r.Min.X, r.Min.Y, r.Min.X+thick, r.Max.Y), src, sp, draw.Src)
-	draw.Draw(dst, image.Rect(r.Max.X-thick, r.Min.Y, r.Max.X, r.Max.Y), src, sp, draw.Src)
 }
 
 // Put

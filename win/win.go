@@ -1,7 +1,6 @@
 package win
 
 import (
-	"fmt"
 	"github.com/as/font"
 	"github.com/as/frame"
 	"github.com/as/shiny/screen"
@@ -23,7 +22,7 @@ type Node struct {
 }
 
 func (n Node) Size() image.Point {
-	return n.Size()
+	return n.size
 }
 func (n Node) Pad() image.Point {
 	return n.Sp.Add(n.Size())
@@ -41,7 +40,6 @@ type Win struct {
 	inverted int
 
 	donec    chan bool
-	workc    chan []image.Rectangle
 	wg       *sync.WaitGroup
 	workerwg *sync.WaitGroup
 
@@ -212,11 +210,6 @@ func (w *Win) Len() int64 {
 	return w.Editor.Len()
 }
 
-func (w *Win) filldebug() {
-	// Put
-	fmt.Printf("lines/maxlines = %d/%d\n", w.Line(), w.MaxLine())
-}
-
 func (w *Win) Refresh() {
 	w.Frame.Refresh()
 	w.UserFunc(w)
@@ -233,7 +226,6 @@ func (w *Win) Upload() {
 	w.Window().Upload(w.Sp, w.b, w.b.Bounds())
 	w.Flush()
 	w.dirty = false
-	return
 }
 
 func (w *Win) ReadAt(off int64, p []byte) (n int, err error) {
