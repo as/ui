@@ -81,7 +81,7 @@ func (t *Tag) Loc() image.Rectangle {
 
 // TagSize returns the size of a tag given the font
 func TagSize(ft font.Face) int {
-	return ft.Dy() + ft.Dy()/2
+	return ft.Dy() + ft.Dy()/2 
 }
 
 // TagPad returns the padding for the tag given the window's padding
@@ -90,14 +90,52 @@ func TagPad(wpad image.Point) image.Point {
 	return image.Pt(wpad.X, 3)
 }
 
-// Put
-func New(dev *ui.Dev, sp, size, pad image.Point, ft font.Face, cols frame.Color) *Tag {
+type Config struct{
+	Facer func(int) font.Face
+	FaceHeight int
+	Margin image.Point
+	Color [3]frame.Color
+	Tag *win.Config
+	Body *win.Config
+}
 
-	// Make the main tag
-	tagY := TagSize(ft)
+func (c *Config) TagConfig() *win.Config{
+		return &win.Config{
+			Facer: c.Facer,
+			Margin: image.Pt(c.Margin.X, 3),
+			Frame: &frame.Config{
+				Color: c.Color[0],
+				Face: c.Facer(c.FaceHeight),
+			},
+		}
+}
+func (c *Config) WinConfig() *win.Config{
+		return &win.Config{
+			Facer: c.Facer,
+			Margin: c.Margin,
+			Frame: &frame.Config{
+				Color: c.Color[1],
+				Face: c.Facer(c.FaceHeight),
+			},
+		}
+}
 
-	// Make tag
-	wtag := win.New(dev, sp, image.Pt(size.X, tagY), TagPad(pad), font.NewFace(ft.Height()), cols)
+
+func New(dev *ui.Dev, sp, size image.Point, conf *Config) *Tag {
+	if conf == nil{
+		conf = &Config{
+			FaceHeight: 11,
+			Facer: font.NewFace,
+			Margin: image.Pt(15, 15),
+			Color: [3]frame.Color{
+				0: frame.ATag1,
+				1: frame.A,
+			},
+		}
+	}
+	tconf := conf.TagConfig()
+	tagY := TagSize(tconf.Frame.Face.(font.Face))
+	wtag := win.New(dev, sp, image.Pt(size.X, tagY), tconf)
 
 	sp = sp.Add(image.Pt(0, tagY))
 	size = size.Sub(image.Pt(0, tagY))
@@ -105,12 +143,7 @@ func New(dev *ui.Dev, sp, size, pad image.Point, ft font.Face, cols frame.Color)
 		return &Tag{sp: sp, Win: wtag, Body: nil}
 	}
 
-	// Make window
-	cols.Back = Yellow
-	ft = font.NewFace(ft.Height())
-	//	ft = font.Clone(ft, ft.Height()())	// TODO(as): bug zone
-	//	ft.SetLetting(ft.Height()() / 3)
-	w := win.New(dev, sp, size, pad, ft, frame.A)
+	w := win.New(dev, sp, size, conf.WinConfig())
 
 	wd, _ := os.Getwd()
 	return &Tag{sp: sp, Win: wtag, Body: w, basedir: wd}
