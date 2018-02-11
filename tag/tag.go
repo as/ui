@@ -14,8 +14,8 @@ import (
 
 	"github.com/as/edit"
 	"github.com/as/event"
+	"github.com/as/font"
 	"github.com/as/frame"
-	"github.com/as/frame/font"
 	"github.com/as/path"
 	"github.com/as/text"
 	"github.com/as/text/action"
@@ -30,29 +30,13 @@ import (
 	"golang.org/x/mobile/event/mouse"
 )
 
-var db = win.Db
-var un = win.Un
-var trace = win.Trace
-
 func p(e mouse.Event) image.Point {
 	return image.Pt(int(e.X), int(e.Y))
 
 }
 
-type doter interface {
-	Dot() (int64, int64)
-}
-
-func whatsdot(d doter) string {
-	q0, q1 := d.Dot()
-	return fmt.Sprintf("Dot: [%d:%d]", q0, q1)
-}
-
-// Put
 var (
 	Buttonsdown = 0
-	noselect    bool
-	lastclickpt image.Point
 )
 
 type Tag struct {
@@ -60,16 +44,16 @@ type Tag struct {
 	Body      *win.Win
 	sp        image.Point
 	Scrolling bool
-	scrolldy  int
-	dirty     bool
-	r0, r1    int64
-	escR      image.Rectangle
-	offset    int64
-	basedir   string
+
+	dirty  bool
+	r0, r1 int64
+	escR   image.Rectangle
+
+	basedir string
 }
 
-func (w *Tag) SetFont(ft *font.Font) {
-	if ft.Size() < 3 || w.Body == nil {
+func (w *Tag) SetFont(ft font.Face) {
+	if ft.Height() < 3 || w.Body == nil {
 		return
 	}
 	w.Body.SetFont(ft)
@@ -96,7 +80,7 @@ func (t *Tag) Loc() image.Rectangle {
 }
 
 // TagSize returns the size of a tag given the font
-func TagSize(ft *font.Font) int {
+func TagSize(ft font.Face) int {
 	return ft.Dy() + ft.Dy()/2
 }
 
@@ -107,13 +91,13 @@ func TagPad(wpad image.Point) image.Point {
 }
 
 // Put
-func New(dev *ui.Dev, sp, size, pad image.Point, ft *font.Font, cols frame.Color) *Tag {
+func New(dev *ui.Dev, sp, size, pad image.Point, ft font.Face, cols frame.Color) *Tag {
 
 	// Make the main tag
 	tagY := TagSize(ft)
 
 	// Make tag
-	wtag := win.New(dev, sp, image.Pt(size.X, tagY), TagPad(pad), ft, cols)
+	wtag := win.New(dev, sp, image.Pt(size.X, tagY), TagPad(pad), font.NewFace(ft.Height()), cols)
 
 	sp = sp.Add(image.Pt(0, tagY))
 	size = size.Sub(image.Pt(0, tagY))
@@ -123,8 +107,9 @@ func New(dev *ui.Dev, sp, size, pad image.Point, ft *font.Font, cols frame.Color
 
 	// Make window
 	cols.Back = Yellow
-	ft = font.Clone(ft, ft.Size())
-	ft.SetLetting(ft.Size() / 3)
+	ft = font.NewFace(ft.Height())
+	//	ft = font.Clone(ft, ft.Height()())	// TODO(as): bug zone
+	//	ft.SetLetting(ft.Height()() / 3)
 	w := win.New(dev, sp, size, pad, ft, frame.A)
 
 	wd, _ := os.Getwd()
@@ -144,7 +129,7 @@ func (t *Tag) Resize(pt image.Point) {
 	var wg sync.WaitGroup
 	defer wg.Wait()
 
-	dy := TagSize(t.Win.Font)
+	dy := TagSize(t.Win.Face)
 	if pt.X < dy || pt.Y < dy {
 		println("bad size request:", pt.String())
 		return
@@ -440,7 +425,7 @@ func (t *Tag) Handle(act text.Editor, e interface{}) {
 		switch e.Code {
 		case key.CodeEqualSign, key.CodeHyphenMinus:
 			if e.Modifiers == key.ModControl {
-				size := t.Body.Frame.Font.Size()
+				size := t.Body.Frame.Face.Height()
 				if key.CodeHyphenMinus == e.Code {
 					size -= 1
 				} else {
@@ -449,7 +434,7 @@ func (t *Tag) Handle(act text.Editor, e interface{}) {
 				if size < 3 {
 					size = 6
 				}
-				t.SetFont(t.Body.Frame.Font.NewSize(size))
+				//t.SetFont(t.Body.Frame.Font.NewSize(size))
 				return
 			}
 		}
@@ -522,8 +507,4 @@ func isdir(path string) bool {
 		return false
 	}
 	return fi.IsDir()
-}
-func isfile(path string) bool {
-	_, err := os.Stat(path)
-	return err == nil
 }

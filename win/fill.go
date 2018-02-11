@@ -18,9 +18,9 @@ func (w *Win) Fill() {
 			break
 		}
 		rp := w.Bytes()[qep : qep+n]
-		m := len(rp)
+
 		nl := w.MaxLine() - w.Line()
-		m = 0
+		m := 0
 		i := int64(0)
 		for i < n {
 			if rp[i] == '\n' {

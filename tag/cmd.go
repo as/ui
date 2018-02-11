@@ -1,9 +1,7 @@
 package tag
 
-// Edit ,x,pt\(,x,pt,c,Pt,
 import (
 	"bytes"
-	"fmt"
 	"image"
 	"io"
 
@@ -11,8 +9,6 @@ import (
 	"github.com/as/ui/win"
 	"golang.org/x/mobile/event/mouse"
 )
-
-var chorded = false
 
 func Pt(e mouse.Event) image.Point {
 	return image.Pt(int(e.X), int(e.Y))
@@ -50,18 +46,4 @@ func Snarf(w text.Editor, e mouse.Event) {
 	io.Copy(Clip, bytes.NewReader(ClipBuf[:n]))
 	q0, q1 := w.Dot()
 	w.Delete(q0, q1)
-}
-
-func region(q0, q1, x int64) int {
-	if x < q0 {
-		return -1
-	}
-	if x > q1 {
-		return 1
-	}
-	return 0
-}
-
-func whatsdown() {
-	fmt.Printf("down: %08x\n", Buttonsdown)
 }

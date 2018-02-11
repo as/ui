@@ -3,8 +3,6 @@ package tag
 import (
 	"bytes"
 	"fmt"
-	window "github.com/as/ms/win"
-	"image"
 	"io"
 	"io/ioutil"
 	"log"
@@ -13,7 +11,6 @@ import (
 	"strings"
 
 	"github.com/as/clip"
-	"github.com/as/cursor"
 	"github.com/as/frame"
 )
 
@@ -39,7 +36,7 @@ func (t *Tag) readfile(s string) (p []byte) {
 			ni, nj := fi[i].Name(), fi[j].Name()
 			return strings.Compare(ni, nj) < 0
 		})
-		dx := t.Body.Font.MeasureByte('e')
+		dx := t.Body.Face.Dx([]byte{'e'})
 		x := 0
 		b := new(bytes.Buffer)
 		w := b
@@ -88,7 +85,4 @@ func init() {
 	if err != nil {
 		panic(err)
 	}
-}
-func moveMouse(pt image.Point) {
-	cursor.MoveTo(window.ClientAbs().Min.Add(pt))
 }
