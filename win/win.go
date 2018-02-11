@@ -9,7 +9,6 @@ import (
 	"golang.org/x/mobile/event/mouse"
 	"image"
 	"image/draw"
-	"sync"
 )
 
 func (w *Win) Dirty() bool {
@@ -40,8 +39,6 @@ type Win struct {
 	inverted int
 
 	donec    chan bool
-	wg       *sync.WaitGroup
-	workerwg *sync.WaitGroup
 
 	UserFunc func(*Win)
 }
@@ -65,8 +62,6 @@ func New(dev *ui.Dev, sp, size, pad image.Point, ft font.Face, cols frame.Color)
 		b:        b,
 		Editor:   ed,
 		UserFunc: func(w *Win) {},
-		wg:       new(sync.WaitGroup),
-		workerwg: new(sync.WaitGroup),
 	}
 	w.init()
 	w.scrollinit(pad)
