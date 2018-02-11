@@ -59,7 +59,7 @@ func New(dev *ui.Dev, sp, size, pad image.Point, ft font.Face, cols frame.Color)
 	ed, _ := text.Open(text.NewBuffer())
 	b := dev.NewBuffer(size)
 	w := &Win{
-		Frame:    frame.New(b.RGBA(), r, &frame.Config{Font: ft, Color: cols}),
+		Frame:    frame.New(b.RGBA(), r, &frame.Config{Face: ft, Color: cols}),
 		Node:     Node{Sp: sp, size: size, pad: pad},
 		Dev:      dev,
 		b:        b,
@@ -126,7 +126,7 @@ func (w *Win) Resize(size image.Point) {
 	w.b.Release()
 	w.b = b
 	r := image.Rectangle{w.pad, w.size} //.Inset(1)
-	w.Frame = frame.New(w.b.RGBA(), r, &frame.Config{Font: w.Frame.Font, Color: w.Frame.Color, Flag: w.Frame.Flags()})
+	w.Frame = frame.New(w.b.RGBA(), r, &frame.Config{Face: w.Frame.Face, Color: w.Frame.Color, Flag: w.Frame.Flags()})
 	w.init()
 	w.scrollinit(w.pad)
 	w.Refresh()
@@ -141,7 +141,7 @@ func (w *Win) SetFont(ft font.Face) {
 		return
 	}
 	r := image.Rectangle{w.pad, w.size}
-	w.Frame = frame.New(w.b.RGBA(), r, &frame.Config{Font: ft, Color: w.Frame.Color, Flag: w.Frame.Flags()})
+	w.Frame = frame.New(w.b.RGBA(), r, &frame.Config{Face: ft, Color: w.Frame.Color, Flag: w.Frame.Flags()})
 	w.Resize(w.size)
 }
 

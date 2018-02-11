@@ -129,7 +129,7 @@ func (t *Tag) Resize(pt image.Point) {
 	var wg sync.WaitGroup
 	defer wg.Wait()
 
-	dy := TagSize(t.Win.Font)
+	dy := TagSize(t.Win.Face)
 	if pt.X < dy || pt.Y < dy {
 		println("bad size request:", pt.String())
 		return
@@ -425,7 +425,7 @@ func (t *Tag) Handle(act text.Editor, e interface{}) {
 		switch e.Code {
 		case key.CodeEqualSign, key.CodeHyphenMinus:
 			if e.Modifiers == key.ModControl {
-				size := t.Body.Frame.Font.Height()
+				size := t.Body.Frame.Face.Height()
 				if key.CodeHyphenMinus == e.Code {
 					size -= 1
 				} else {
