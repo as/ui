@@ -27,6 +27,16 @@ func (n Node) Pad() image.Point {
 	return n.Sp.Add(n.Size())
 }
 
+type Facer func(int) font.Face
+
+type Config struct {
+	Name string
+	Facer
+	Margin image.Point
+	Frame  *frame.Config
+	Editor text.Editor
+}
+
 type Win struct {
 	*frame.Frame
 	text.Editor
@@ -38,7 +48,7 @@ type Win struct {
 	Sq       int64
 	inverted int
 
-	donec    chan bool
+	donec chan bool
 
 	UserFunc func(*Win)
 }
@@ -51,20 +61,32 @@ func (w *Win) Origin() int64 {
 	return w.org
 }
 
-func New(dev *ui.Dev, sp, size, pad image.Point, ft font.Face, cols frame.Color) *Win {
-	r := image.Rectangle{pad, size}
-	ed, _ := text.Open(text.NewBuffer())
+func New(dev *ui.Dev, sp, size image.Point, conf *Config) *Win {
+	if conf == nil {
+		conf = &Config{
+			Facer:  font.NewFace,
+			Margin: image.Pt(15, 15),
+			Frame: &frame.Config{
+				Face: font.NewFace(11),
+			},
+		}
+	}
+	ed := conf.Editor
+	if ed == nil {
+		ed, _ = text.Open(text.NewBuffer())
+	}
 	b := dev.NewBuffer(size)
+	r := image.Rectangle{conf.Margin, size}
 	w := &Win{
-		Frame:    frame.New(b.RGBA(), r, &frame.Config{Face: ft, Color: cols}),
-		Node:     Node{Sp: sp, size: size, pad: pad},
+		Frame:    frame.New(b.RGBA(), r, conf.Frame),
+		Node:     Node{Sp: sp, size: size, pad: conf.Margin},
 		Dev:      dev,
 		b:        b,
 		Editor:   ed,
 		UserFunc: func(w *Win) {},
 	}
 	w.init()
-	w.scrollinit(pad)
+	w.scrollinit(conf.Margin)
 
 	return w
 }
