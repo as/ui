@@ -6,7 +6,6 @@ import (
 	"github.com/as/shiny/screen"
 	"github.com/as/text"
 	"github.com/as/ui"
-	"golang.org/x/mobile/event/mouse"
 	"image"
 	"image/draw"
 )
@@ -19,6 +18,10 @@ type Config struct {
 	Margin image.Point
 	Frame  *frame.Config
 	Editor text.Editor
+
+	// Ctl is a channel provided by the window owner. It carries window messages
+	// back to the creator. Valid types are event.Look and event.Cmd
+	Ctl chan interface{}
 }
 
 type Win struct {
@@ -31,8 +34,13 @@ type Win struct {
 	org      int64
 	Sq       int64
 	inverted int
-	donec chan bool
+	donec    chan bool
 	UserFunc func(*Win)
+	ctl      chan interface{}
+}
+
+func (w *Win) Ctl() chan interface{} {
+	return w.ctl
 }
 
 type Node struct {
@@ -64,6 +72,7 @@ func New(dev *ui.Dev, sp, size image.Point, conf *Config) *Win {
 	b := dev.NewBuffer(size)
 	r := image.Rectangle{conf.Margin, size}
 	w := &Win{
+		ctl:      conf.Ctl,
 		Frame:    frame.New(b.RGBA(), r, conf.Frame),
 		Node:     Node{Sp: sp, size: size, pad: conf.Margin},
 		Dev:      dev,
@@ -160,23 +169,6 @@ func (w *Win) SetFont(ft font.Face) {
 	w.Resize(w.size)
 }
 
-func (w *Win) NextEvent() (e interface{}) {
-	switch e := w.Window().NextEvent().(type) {
-	case mouse.Event:
-		e.X -= float32(w.Sp.X)
-		e.Y -= float32(w.Sp.Y)
-		return e
-	case interface{}:
-		return e
-	}
-	return nil
-}
-func (w *Win) Send(e interface{}) {
-	w.Window().Send(e)
-}
-func (w *Win) SendFirst(e interface{}) {
-	w.Window().SendFirst(e)
-}
 func (w *Win) Blank() {
 	if w.b == nil {
 		return

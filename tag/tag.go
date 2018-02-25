@@ -49,6 +49,8 @@ type Tag struct {
 	r0, r1 int64
 	escR   image.Rectangle
 
+	ctl chan<- interface{}
+
 	basedir string
 }
 
@@ -81,7 +83,7 @@ func (t *Tag) Loc() image.Rectangle {
 
 // TagSize returns the size of a tag given the font
 func TagSize(ft font.Face) int {
-	return ft.Dy() + ft.Dy()/2 
+	return ft.Dy() + ft.Dy()/2
 }
 
 // TagPad returns the padding for the tag given the window's padding
@@ -90,48 +92,53 @@ func TagPad(wpad image.Point) image.Point {
 	return image.Pt(wpad.X, 3)
 }
 
-type Config struct{
-	Facer func(int) font.Face
+type Config struct {
+	Facer      func(int) font.Face
 	FaceHeight int
-	Margin image.Point
-	Color [3]frame.Color
-	Tag *win.Config
-	Body *win.Config
+	Margin     image.Point
+	Color      [3]frame.Color
+	Tag        *win.Config
+	Body       *win.Config
+	Ctl        chan interface{}
 }
 
-func (c *Config) TagConfig() *win.Config{
-		return &win.Config{
-			Facer: c.Facer,
-			Margin: image.Pt(c.Margin.X, 3),
-			Frame: &frame.Config{
-				Color: c.Color[0],
-				Face: c.Facer(c.FaceHeight),
-			},
-		}
+func (c *Config) TagConfig() *win.Config {
+	return &win.Config{
+		Ctl:    c.Ctl,
+		Facer:  c.Facer,
+		Margin: image.Pt(c.Margin.X, 3),
+		Frame: &frame.Config{
+			Color: c.Color[0],
+			Face:  c.Facer(c.FaceHeight),
+		},
+	}
 }
-func (c *Config) WinConfig() *win.Config{
-		return &win.Config{
-			Facer: c.Facer,
-			Margin: c.Margin,
-			Frame: &frame.Config{
-				Color: c.Color[1],
-				Face: c.Facer(c.FaceHeight),
-			},
-		}
+func (c *Config) WinConfig() *win.Config {
+	return &win.Config{
+		Ctl:    c.Ctl,
+		Facer:  c.Facer,
+		Margin: c.Margin,
+		Frame: &frame.Config{
+			Color: c.Color[1],
+			Face:  c.Facer(c.FaceHeight),
+		},
+	}
 }
-
 
 func New(dev *ui.Dev, sp, size image.Point, conf *Config) *Tag {
-	if conf == nil{
+	if conf == nil {
 		conf = &Config{
 			FaceHeight: 11,
-			Facer: font.NewFace,
-			Margin: image.Pt(15, 15),
+			Facer:      font.NewFace,
+			Margin:     image.Pt(15, 15),
 			Color: [3]frame.Color{
 				0: frame.ATag1,
 				1: frame.A,
 			},
 		}
+	}
+	if conf.Ctl == nil {
+		panic("ctl cant be nil")
 	}
 	tconf := conf.TagConfig()
 	tagY := TagSize(tconf.Frame.Face.(font.Face))
@@ -140,13 +147,13 @@ func New(dev *ui.Dev, sp, size image.Point, conf *Config) *Tag {
 	sp = sp.Add(image.Pt(0, tagY))
 	size = size.Sub(image.Pt(0, tagY))
 	if size.Y < tagY {
-		return &Tag{sp: sp, Win: wtag, Body: nil}
+		return &Tag{sp: sp, Win: wtag, Body: nil, ctl: conf.Ctl}
 	}
 
 	w := win.New(dev, sp, size, conf.WinConfig())
 
 	wd, _ := os.Getwd()
-	return &Tag{sp: sp, Win: wtag, Body: w, basedir: wd}
+	return &Tag{sp: sp, Win: wtag, Body: w, basedir: wd, ctl: conf.Ctl}
 }
 
 func (t *Tag) Move(pt image.Point) {
@@ -235,14 +242,15 @@ func (t *Tag) getbody(abs, addr string) {
 	w.Select(0, 0)
 	w.SetOrigin(0, true)
 	if addr != "" {
-		w.SendFirst(mustCompile(addr))
+		t.ctl <- mustCompile(addr)
+		//w.SendFirst(mustCompile(addr)) //TODO
 	}
 }
 
 func (t *Tag) Get(name string) {
 	w := t.Body
 	if w == nil {
-		w.SendFirst(fmt.Errorf("tag: window has no body for get request %q\n", name))
+		t.ctl <- fmt.Errorf("tag: window has no body for get request %q\n", name)
 		return
 	}
 	if name == "" {
@@ -298,7 +306,8 @@ func (t *Tag) Put() (err error) {
 	if name == "" {
 		return fmt.Errorf("no file")
 	}
-	t.Window().Send(fmt.Errorf("Put %q", name))
+	t.ctl <- fmt.Errorf("Put %q", name)
+	//	t.Window().Send(fmt.Errorf("Put %q", name)) // TODO
 	writefile(name, t.Body.Bytes())
 	return nil
 }
@@ -340,7 +349,7 @@ func (t *Tag) Mouse(act text.Editor, e interface{}) {
 			if act == t.Win {
 				sweeper = mus.NewNopScroller(act)
 			}
-			act.Sq, q0, q1 = mus.Sweep(sweeper, e, 15, act.Sq, q0, q1, act)
+			act.Sq, q0, q1 = mus.Sweep(sweeper, e, 15, act.Sq, q0, q1, nil) //TODO (nil was act)
 			if e.Button == 1 {
 				act.Select(q0, q1)
 			} else {
@@ -369,7 +378,7 @@ func (t *Tag) Mouse(act text.Editor, e interface{}) {
 				}
 				if e.Button == 3 {
 					act.Select(q0, q1)
-					act.SendFirst(event.Look{
+					act.Ctl() <- event.Look{
 						Rec: event.Rec{
 							Q0: q0,
 							Q1: q1,
@@ -379,9 +388,9 @@ func (t *Tag) Mouse(act text.Editor, e interface{}) {
 						To:      []event.Editor{t.Body},
 						Basedir: t.basedir,
 						Name:    t.FileName(),
-					})
+					}
 				} else {
-					act.SendFirst(event.Cmd{
+					act.Ctl() <- event.Cmd{
 						Rec: event.Rec{
 							Q0: q0, Q1: q1,
 							P: act.Bytes()[q0:q1],
@@ -390,7 +399,7 @@ func (t *Tag) Mouse(act text.Editor, e interface{}) {
 						To:      []event.Editor{t.Body},
 						Basedir: t.basedir,
 						Name:    t.FileName(),
-					})
+					}
 				}
 			}
 		}

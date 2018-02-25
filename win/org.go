@@ -37,13 +37,13 @@ func (w *Win) setOrigin(org int64) {
 	case abs(delta) >= f.Len():
 		f.Delete(0, f.Len())
 	case delta > 0:
-		func(){
-		end := w.org+f.Len()
-		if q0 < end && q1>= end{
-		w.Swap()
-		defer w.Swap()
-		}
-		f.Delete(0, delta)
+		func() {
+			end := w.org + f.Len()
+			if q0 < end && q1 >= end {
+				w.Swap()
+				defer w.Swap()
+			}
+			f.Delete(0, delta)
 		}()
 		fix = true
 	default:

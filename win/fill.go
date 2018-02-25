@@ -7,7 +7,7 @@ func (w *Win) fixEnd() {
 	if p1 > p0 {
 		w.Redraw(w.PointOf(p1-1), p1-1, p1, true)
 	}
-		w.Redraw(w.PointOf(p1), p1, p1+w.Frame.Len(), false)
+	w.Redraw(w.PointOf(p1), p1, p1+w.Frame.Len(), false)
 }
 
 func (w *Win) Fill() {

@@ -51,7 +51,7 @@ func runGoImports(t *Tag, e key.Event) {
 				ee.Err = err
 			}
 		}
-		t.Window().Send(ee)
+		panic("t.Window().Send(ee)")
 		return
 	}
 	q0, q1 := t.Body.Dot()
