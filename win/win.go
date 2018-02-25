@@ -11,22 +11,6 @@ import (
 	"image/draw"
 )
 
-func (w *Win) Dirty() bool {
-	return w.dirty || (w.Frame != nil && w.Frame.Dirty())
-}
-
-type Node struct {
-	Sp, size, pad image.Point
-	dirty         bool
-}
-
-func (n Node) Size() image.Point {
-	return n.size
-}
-func (n Node) Pad() image.Point {
-	return n.Sp.Add(n.Size())
-}
-
 type Facer func(int) font.Face
 
 type Config struct {
@@ -47,18 +31,20 @@ type Win struct {
 	org      int64
 	Sq       int64
 	inverted int
-
 	donec chan bool
-
 	UserFunc func(*Win)
 }
 
-func (n *Win) Bounds() image.Rectangle {
-	return image.Rectangle{n.Sp, n.Size()}
+type Node struct {
+	Sp, size, pad image.Point
+	dirty         bool
 }
 
-func (w *Win) Origin() int64 {
-	return w.org
+func (n Node) Size() image.Point {
+	return n.size
+}
+func (n Node) Pad() image.Point {
+	return n.Sp.Add(n.Size())
 }
 
 func New(dev *ui.Dev, sp, size image.Point, conf *Config) *Win {
@@ -91,11 +77,8 @@ func New(dev *ui.Dev, sp, size image.Point, conf *Config) *Win {
 	return w
 }
 
-func (w *Win) FuncInstall(fn func(*Win)) {
-	if fn == nil {
-		fn = func(w *Win) {}
-	}
-	w.UserFunc = fn
+func (w *Win) Dirty() bool {
+	return w.dirty || (w.Frame != nil && w.Frame.Dirty())
 }
 
 func (w *Win) Buffer() screen.Buffer {
@@ -103,6 +86,21 @@ func (w *Win) Buffer() screen.Buffer {
 }
 func (w *Win) Size() image.Point {
 	return w.size
+}
+
+func (n *Win) Bounds() image.Rectangle {
+	return image.Rectangle{n.Sp, n.Size()}
+}
+
+func (w *Win) Origin() int64 {
+	return w.org
+}
+
+func (w *Win) FuncInstall(fn func(*Win)) {
+	if fn == nil {
+		fn = func(w *Win) {}
+	}
+	w.UserFunc = fn
 }
 
 func (w *Win) init() {
