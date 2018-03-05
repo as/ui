@@ -21,62 +21,51 @@ func max(a, b int) int {
 	return a
 }
 
-func (t *Tag) readfile(s string) (p []byte) {
-	var err error
-	if isdir(s) {
-		fi, err := ioutil.ReadDir(s)
-		if err != nil {
-			log.Println(err)
-			return nil
+func (t *Tag) dirfmt(p []byte) []byte {
+	dx := t.Body.Face.Dx([]byte{'e'}) // common lowercase rune
+	maxx := t.Body.Frame.Bounds().Dx()
+
+	t.Body.Frame.SetFlags(t.Body.Frame.Flags() | frame.FrElastic)
+
+	x := 0
+	w := new(bytes.Buffer)
+	for _, nm := range bytes.Split(p, []byte{'\t'}) {
+		word := fmt.Sprintf("\t%s", nm)
+		wordlen := len(word) - 1
+		wordpix := wordlen * dx
+		advance := max(wordpix, 8*x)
+		if x+advance > maxx {
+			fmt.Fprintf(w, "\t\n")
+			x = -advance
 		}
-		sort.SliceStable(fi, func(i, j int) bool {
-			if fi[i].IsDir() && !fi[j].IsDir() {
-				return true
-			}
-			ni, nj := fi[i].Name(), fi[j].Name()
-			return strings.Compare(ni, nj) < 0
-		})
-		dx := t.Body.Face.Dx([]byte{'e'})
-		x := 0
-		b := new(bytes.Buffer)
-		w := b
-		t.Body.Frame.SetFlags(t.Body.Frame.Flags() | frame.FrElastic)
-		maxx := t.Body.Frame.Bounds().Dx()
-		for _, v := range fi {
-			nm := v.Name()
-			if v.IsDir() {
-				nm += string(os.PathSeparator)
-			}
-			word := fmt.Sprintf("\t%s", nm)
-			wordlen := len(word) - 1
-			wordpix := wordlen * dx
-			advance := max(wordpix, 8*x)
-			if x+advance > maxx {
-				fmt.Fprintf(w, "\t\n")
-				x = -advance
-			}
-			fmt.Fprintf(w, word)
-			x += advance
-		}
-		fmt.Fprintf(w, "\n")
-		return b.Bytes()
+		fmt.Fprintf(w, word)
+		x += advance
 	}
-	p, err = ioutil.ReadFile(s)
+	return w.Bytes()
+}
+
+func (t *Tag) readfile(s string) (p []byte) {
+	fi, err := t.Fs.Stat(s)
+	dir := false
+	if err == nil && fi.IsDir() {
+		dir = true
+	}
+
+	p, err = t.Fs.Get(s)
 	if err != nil {
-		log.Println(err)
+		t.ctl <- err
+		return []byte{}
+	}
+	if dir {
+		p = t.dirfmt(p)
 	}
 	return p
 }
-func writefile(s string, p []byte) {
-	fd, err := os.Create(s)
+func (t *Tag) writefile(s string, p []byte) {
+	err := t.Fs.Put(s, p)
 	if err != nil {
-		log.Println(err)
+		t.ctl <- err
 	}
-	n, err := io.Copy(fd, bytes.NewReader(p))
-	if err != nil {
-		log.Println(err)
-	}
-	println("wrote", n, "bytes")
 }
 
 func init() {

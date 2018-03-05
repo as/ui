@@ -12,6 +12,8 @@ import (
 	"path/filepath"
 	"sync"
 
+	"github.com/as/srv/fs"
+
 	"github.com/as/edit"
 	"github.com/as/event"
 	"github.com/as/font"
@@ -42,8 +44,10 @@ var (
 type Tag struct {
 	*win.Win
 	Body      *win.Win
-	sp        image.Point
 	Scrolling bool
+	fs.Fs
+
+	sp image.Point
 
 	dirty  bool
 	r0, r1 int64
@@ -100,6 +104,7 @@ type Config struct {
 	Tag        *win.Config
 	Body       *win.Config
 	Ctl        chan interface{}
+	Filesystem fs.Fs
 }
 
 func (c *Config) TagConfig() *win.Config {
@@ -140,6 +145,9 @@ func New(dev *ui.Dev, sp, size image.Point, conf *Config) *Tag {
 	if conf.Ctl == nil {
 		panic("ctl cant be nil")
 	}
+	if conf.Filesystem == nil {
+		conf.Filesystem = &fs.Local{}
+	}
 	tconf := conf.TagConfig()
 	tagY := TagSize(tconf.Frame.Face.(font.Face))
 	wtag := win.New(dev, sp, image.Pt(size.X, tagY), tconf)
@@ -153,7 +161,7 @@ func New(dev *ui.Dev, sp, size image.Point, conf *Config) *Tag {
 	w := win.New(dev, sp, size, conf.WinConfig())
 
 	wd, _ := os.Getwd()
-	return &Tag{sp: sp, Win: wtag, Body: w, basedir: wd, ctl: conf.Ctl}
+	return &Tag{sp: sp, Win: wtag, Body: w, basedir: wd, ctl: conf.Ctl, Fs: conf.Filesystem}
 }
 
 func (t *Tag) Move(pt image.Point) {
@@ -308,7 +316,7 @@ func (t *Tag) Put() (err error) {
 	}
 	t.ctl <- fmt.Errorf("Put %q", name)
 	//	t.Window().Send(fmt.Errorf("Put %q", name)) // TODO
-	writefile(name, t.Body.Bytes())
+	t.Fs.Put(name, t.Body.Bytes())
 	return nil
 }
 func pt(e mouse.Event) image.Point {
