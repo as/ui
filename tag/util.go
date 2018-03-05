@@ -3,12 +3,6 @@ package tag
 import (
 	"bytes"
 	"fmt"
-	"io"
-	"io/ioutil"
-	"log"
-	"os"
-	"sort"
-	"strings"
 
 	"github.com/as/clip"
 	"github.com/as/frame"

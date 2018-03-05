@@ -2,9 +2,10 @@ package tag
 
 import (
 	"bytes"
+	"io"
+
 	"github.com/as/clip"
 	"github.com/as/text"
-	"io"
 )
 
 var (
