@@ -1,10 +1,13 @@
 package win
 
 func (w *Win) fixEnd() {
-	fr := w.Frame.Bounds()
-	if pt := w.PointOf(w.Frame.Len()); pt.Y != fr.Max.Y {
-		w.Paint(pt, fr.Max, w.Frame.Color.Palette.Back)
+	p0, p1 := w.Frame.Dot()
+	p0 = clamp(p0, 0, w.Frame.Len())
+	p1 = clamp(p1, 0, w.Frame.Len())
+	if p1 > p0 {
+		w.Redraw(w.PointOf(p1-1), p1-1, p1, true)
 	}
+	w.Redraw(w.PointOf(p1), p1, p1+w.Frame.Len(), false)
 }
 
 func (w *Win) Fill() {
