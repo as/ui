@@ -8,11 +8,13 @@ const (
 	JumpScrollMargin = -3
 )
 
-// Select selects the range [q0:q1] inclusive
-func (w *Win) Select(q0, q1 int64) {
+// Select selects the range [q0:q1] inclusive and returns
+// the old selection (equivalent to dot before select was called)
+func (w *Win) Select(q0, q1 int64) (int64, int64) {
 	if q0 > q1 {
 		q0, q1 = q1, q0
 	}
+	a0, a1 := w.Dot()
 	w.Editor.Select(q0, q1)
 	reg := text.Region3(q0, w.org-1, w.org+w.Frame.Len())
 
@@ -22,6 +24,7 @@ func (w *Win) Select(q0, q1 int64) {
 	if q0 == q1 && reg != 0 {
 		w.Untick()
 	}
+	return a0, a1
 }
 
 // Jump scrolls the active selection into view. An optional mouseFunc

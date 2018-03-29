@@ -226,7 +226,7 @@ func (t *Tag) Close() (err error) {
 
 func (t *Tag) Dir() string {
 	x := path.DirOf(t.FileName())
-	if filepath.IsAbs(x) {
+	if IsAbs(x) {
 		return x
 	}
 	return filepath.Join(t.basedir, x)
@@ -268,7 +268,7 @@ func (t *Tag) Get(name string) {
 
 	abs := ""
 	name, addr := action.SplitPath(name)
-	if filepath.IsAbs(name) && path.Exists(name) {
+	if IsAbs(name) && path.Exists(name) {
 		t.basedir = path.DirOf(name)
 		abs = name
 		t.fixtag(abs)
@@ -292,7 +292,7 @@ type GetEvent struct {
 
 func (t *Tag) abs() string {
 	name := t.FileName()
-	if !filepath.IsAbs(name) {
+	if !IsAbs(name) {
 		name = filepath.Join(t.basedir, name)
 	}
 	return name

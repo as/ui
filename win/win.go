@@ -26,10 +26,10 @@ type Config struct {
 
 type Win struct {
 	*frame.Frame
-	text.Editor
-	Node
 	*ui.Dev
 	b screen.Buffer
+	text.Editor
+	Node
 	ScrollBar
 	org      int64
 	Sq       int64
@@ -180,7 +180,6 @@ func (w *Win) Blank() {
 	}
 	w.Mark()
 	w.drawsb()
-	//w.upload()
 }
 func (w *Win) Dot() (int64, int64) {
 	return w.Editor.Dot()
@@ -225,7 +224,6 @@ func (w *Win) Refresh() {
 	w.dirty = false
 }
 
-// the old "Upload"
 func (w *Win) Upload() {
 	if !w.dirty {
 		return

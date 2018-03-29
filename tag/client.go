@@ -34,7 +34,8 @@ func (c *client) Mark(s int64) {
 	c.s = s
 }
 
-func (c *client) Select(q0, q1 int64) {
+func (c *client) Select(q0, q1 int64) (s0, s1 int64) {
+	s0, s1 = c.q0, c.q1
 	if q0 > q1 {
 		q1, q0 = q0, q1
 	}
@@ -47,6 +48,7 @@ func (c *client) Select(q0, q1 int64) {
 		}
 	}
 	c.q0, c.q1 = q0, q1
+	return
 }
 func (c *client) Insert(s []byte, q0 int64) (n int) {
 	return n

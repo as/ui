@@ -46,4 +46,5 @@ func Snarf(w text.Editor, e mouse.Event) {
 	io.Copy(Clip, bytes.NewReader(ClipBuf[:n]))
 	q0, q1 := w.Dot()
 	w.Delete(q0, q1)
+	w.Select(q0, q0)
 }
