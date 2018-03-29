@@ -1,7 +1,6 @@
 package win
 
 import (
-	"image"
 	"image/png"
 	"os"
 )
