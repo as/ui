@@ -1,13 +1,14 @@
 package win
 
 import (
+	"image"
+	"image/draw"
+
 	"github.com/as/font"
 	"github.com/as/frame"
 	"github.com/as/shiny/screen"
 	"github.com/as/text"
 	"github.com/as/ui"
-	"image"
-	"image/draw"
 )
 
 type Facer func(int) font.Face
@@ -193,7 +194,7 @@ func (w *Win) Swap() bool {
 	return w.inverted%2 == 0
 }
 
-func (w *Win) BackNL(p int64, n int) int64 {
+func (w *Win) backNL(p int64, n int) int64 {
 	if n == 0 && p > 0 && w.Bytes()[p-1] != '\n' {
 		n = 1
 	}

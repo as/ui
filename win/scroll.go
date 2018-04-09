@@ -33,7 +33,7 @@ func (w *Win) Scroll(dl int) {
 	}
 	org := w.org
 	if dl < 0 {
-		org = w.BackNL(org, -dl)
+		org = w.backNL(org, -dl)
 		w.SetOrigin(org, true)
 	} else {
 		if org+w.Frame.Nchars == w.Len() {
