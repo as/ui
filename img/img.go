@@ -5,7 +5,6 @@ import (
 	"image"
 	"image/draw"
 	_ "image/png"
-	"io/ioutil"
 
 	"github.com/as/shiny/screen"
 	"github.com/as/text"
@@ -24,6 +23,16 @@ func (n Node) Pad() image.Point {
 	return n.Sp.Add(n.pad)
 }
 
+type Config struct {
+	Name string
+	Margin image.Point
+	Editor text.Editor
+
+	// Ctl is a channel provided by the window owner. It carries window messages
+	// back to the creator. Valid types are event.Look and event.Cmd
+	Ctl chan interface{}
+}
+
 type Img struct {
 	Node
 	*ui.Dev
@@ -39,18 +48,18 @@ type ScrollBar struct {
 	Scrollr image.Rectangle
 }
 
-var testimage, _ = ioutil.ReadFile(`C:\d\suns.png`)
 
-func New(dev *ui.Dev, sp, size, pad image.Point, img image.Image) *Img {
+func New(dev *ui.Dev, sp, size image.Point, conf *Config) *Img {
 	ed, _ := text.Open(text.NewBuffer())
 	b := dev.NewBuffer(size)
-	if img == nil {
-		img, _, _ = image.Decode(bytes.NewReader(testimage))
+	var img image.Image
+	if ed.Len() != 0 {
+		img, _, _ = image.Decode(bytes.NewReader(ed.Bytes()))
 	}
 
 	w := &Img{
 		img:    img,
-		Node:   Node{Sp: sp, size: size, pad: pad},
+		Node:   Node{Sp: sp, size: size, pad: conf.Margin},
 		Dev:    dev,
 		b:      b,
 		Editor: ed,

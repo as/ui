@@ -110,6 +110,7 @@ type Config struct {
 	Body       *win.Config
 	Ctl        chan interface{}
 	Filesystem fs.Fs
+	Image bool	// Image makes win.Win ->img.Img instead
 }
 
 func (c *Config) TagConfig() *win.Config {
@@ -138,6 +139,7 @@ func (c *Config) WinConfig() *win.Config {
 func New(dev *ui.Dev, sp, size image.Point, conf *Config) *Tag {
 	if conf == nil {
 		conf = &Config{
+			Image: true,
 			FaceHeight: 11,
 			Facer:      font.NewFace,
 			Margin:     image.Pt(15, 15),
@@ -163,10 +165,15 @@ func New(dev *ui.Dev, sp, size image.Point, conf *Config) *Tag {
 		return &Tag{sp: sp, Win: wtag, Body: nil, ctl: conf.Ctl}
 	}
 
-	w := Window(win.New(dev, sp, size, conf.WinConfig()))
-	//	if size.X > 400 && size.Y > 400 {
-	//		w = img.New(dev, sp, image.Pt(size.X, tagY), image.ZP, nil)
-	//	}
+	var w Window
+	if conf.Image && size.X > 50 && size.Y > 50{
+		iconf := &img.Config{
+			Margin: image.Pt(15,15),
+		}
+		w = img.New(dev, sp, image.Pt(size.X, tagY), iconf)
+	} else {
+		w = win.New(dev, sp, size, conf.WinConfig())
+	}
 
 	wd, _ := os.Getwd()
 	return &Tag{sp: sp, Win: wtag, Body: w, basedir: wd, ctl: conf.Ctl, Fs: conf.Filesystem}
