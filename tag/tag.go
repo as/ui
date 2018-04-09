@@ -25,6 +25,7 @@ import (
 	"github.com/as/text/kbd"
 	mus "github.com/as/text/mouse"
 	"github.com/as/ui"
+	"github.com/as/ui/img"
 	"github.com/as/ui/win"
 	//"github.com/as/worm"
 	"github.com/as/shiny/screen"
@@ -151,6 +152,8 @@ func New(dev *ui.Dev, sp, size image.Point, conf *Config) *Tag {
 	tconf := conf.TagConfig()
 	tagY := TagSize(tconf.Frame.Face.(font.Face))
 	wtag := win.New(dev, sp, image.Pt(size.X, tagY), tconf)
+	wimg := img.New(dev, sp, image.Pt(size.X, tagY), image.ZP, nil)
+	wimg = wimg
 
 	sp = sp.Add(image.Pt(0, tagY))
 	size = size.Sub(image.Pt(0, tagY))
@@ -484,7 +487,8 @@ func (t *Tag) Handle(act text.Editor, e interface{}) {
 				if size < 3 {
 					size = 6
 				}
-				//t.SetFont(t.Body.Frame.Font.NewSize(size))
+				t.SetFont(font.NewFace(size))
+				//t.SetFont(t.Body.Frame.Face.NewSize(size))
 				return
 			}
 		}
