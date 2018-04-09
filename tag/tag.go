@@ -44,7 +44,7 @@ var (
 
 type Tag struct {
 	*win.Win
-	Body      *win.Win
+	Body      Window //*win.Win
 	Scrolling bool
 	fs.Fs
 
@@ -60,13 +60,17 @@ type Tag struct {
 }
 
 func (w *Tag) SetFont(ft font.Face) {
+	body := w.Body.(*win.Win)
+	if body == nil {
+		return
+	}
 	if ft.Height() < 3 || w.Body == nil {
 		return
 	}
-	w.Body.SetFont(ft)
+	body.SetFont(ft)
 	w.dirty = true
 	w.Mark()
-	w.Body.Refresh()
+	body.Refresh()
 }
 
 func (t *Tag) Dirty() bool {
@@ -152,8 +156,6 @@ func New(dev *ui.Dev, sp, size image.Point, conf *Config) *Tag {
 	tconf := conf.TagConfig()
 	tagY := TagSize(tconf.Frame.Face.(font.Face))
 	wtag := win.New(dev, sp, image.Pt(size.X, tagY), tconf)
-	wimg := img.New(dev, sp, image.Pt(size.X, tagY), image.ZP, nil)
-	wimg = wimg
 
 	sp = sp.Add(image.Pt(0, tagY))
 	size = size.Sub(image.Pt(0, tagY))
@@ -161,7 +163,10 @@ func New(dev *ui.Dev, sp, size image.Point, conf *Config) *Tag {
 		return &Tag{sp: sp, Win: wtag, Body: nil, ctl: conf.Ctl}
 	}
 
-	w := win.New(dev, sp, size, conf.WinConfig())
+	w := Window(win.New(dev, sp, size, conf.WinConfig()))
+	//	if size.X > 400 && size.Y > 400 {
+	//		w = img.New(dev, sp, image.Pt(size.X, tagY), image.ZP, nil)
+	//	}
 
 	wd, _ := os.Getwd()
 	return &Tag{sp: sp, Win: wtag, Body: w, basedir: wd, ctl: conf.Ctl, Fs: conf.Filesystem}
@@ -478,7 +483,11 @@ func (t *Tag) Handle(act text.Editor, e interface{}) {
 		switch e.Code {
 		case key.CodeEqualSign, key.CodeHyphenMinus:
 			if e.Modifiers == key.ModControl {
-				size := t.Body.Frame.Face.Height()
+				win, _ := t.Body.(*win.Win)
+				if win == nil {
+					return
+				}
+				size := win.Frame.Face.Height()
 				if key.CodeHyphenMinus == e.Code {
 					size -= 1
 				} else {

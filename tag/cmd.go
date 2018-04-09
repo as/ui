@@ -24,7 +24,7 @@ func Visible(w *win.Win, q0, q1 int64) bool {
 	return true
 }
 
-func Paste(w text.Editor, e mouse.Event) (int64, int64){
+func Paste(w text.Editor, e mouse.Event) (int64, int64) {
 	n, _ := Clip.Read(ClipBuf)
 	s := fromUTF16(ClipBuf[:n])
 	q0, q1 := w.Dot()

@@ -1,8 +1,11 @@
 package img
 
 import (
+	"bytes"
 	"image"
 	"image/draw"
+	_ "image/png"
+	"io/ioutil"
 
 	"github.com/as/shiny/screen"
 	"github.com/as/text"
@@ -18,7 +21,7 @@ func (n Node) Size() image.Point {
 	return n.Size()
 }
 func (n Node) Pad() image.Point {
-	return n.Sp.Add(n.Size())
+	return n.Sp.Add(n.pad)
 }
 
 type Img struct {
@@ -36,9 +39,15 @@ type ScrollBar struct {
 	Scrollr image.Rectangle
 }
 
+var testimage, _ = ioutil.ReadFile(`C:\d\suns.png`)
+
 func New(dev *ui.Dev, sp, size, pad image.Point, img image.Image) *Img {
 	ed, _ := text.Open(text.NewBuffer())
 	b := dev.NewBuffer(size)
+	if img == nil {
+		img, _, _ = image.Decode(bytes.NewReader(testimage))
+	}
+
 	w := &Img{
 		img:    img,
 		Node:   Node{Sp: sp, size: size, pad: pad},
@@ -80,7 +89,7 @@ func (w *Img) Dirty() bool             { return w.dirty }
 func (w *Img) Len() int64              { return w.Editor.Len() }
 func (w Img) Loc() image.Rectangle     { return image.Rectangle{w.Sp, w.Sp.Add(w.size)} }
 func (w *Img) Move(sp image.Point)     { w.Sp = sp }
-func (w *Img) Origin() int64 { return w.org }
+func (w *Img) Origin() int64           { return w.org }
 func (w *Img) Refresh() {
 	w.Upload()
 	w.Window().Upload(w.Sp, w.b, w.b.Bounds())
@@ -97,6 +106,9 @@ func (w *Img) Upload() {
 	w.dirty = false
 }
 func (w *Img) Resize(size image.Point) {
+	if size.Y < 100 {
+		size.Y = 100
+	}
 	b := w.NewBuffer(size)
 	w.size = size
 	w.b.Release()

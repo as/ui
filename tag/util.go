@@ -6,6 +6,7 @@ import (
 
 	"github.com/as/clip"
 	"github.com/as/frame"
+	"github.com/as/ui/win"
 )
 
 func max(a, b int) int {
@@ -16,10 +17,15 @@ func max(a, b int) int {
 }
 
 func (t *Tag) dirfmt(p []byte) []byte {
-	dx := t.Body.Face.Dx([]byte{'e'}) // common lowercase rune
-	maxx := t.Body.Frame.Bounds().Dx()
+	win, _ := t.Body.(*win.Win)
+	if win == nil {
+		return nil
+	}
 
-	t.Body.Frame.SetFlags(t.Body.Frame.Flags() | frame.FrElastic)
+	dx := win.Face.Dx([]byte{'e'}) // common lowercase rune
+	maxx := win.Frame.Bounds().Dx()
+
+	win.Frame.SetFlags(win.Frame.Flags() | frame.FrElastic)
 
 	x := 0
 	w := new(bytes.Buffer)
