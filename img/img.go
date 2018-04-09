@@ -7,7 +7,6 @@ import (
 	"github.com/as/shiny/screen"
 	"github.com/as/text"
 	"github.com/as/ui"
-	"golang.org/x/mobile/event/mouse"
 )
 
 type Node struct {
@@ -81,17 +80,6 @@ func (w *Img) Dirty() bool             { return w.dirty }
 func (w *Img) Len() int64              { return w.Editor.Len() }
 func (w Img) Loc() image.Rectangle     { return image.Rectangle{w.Sp, w.Sp.Add(w.size)} }
 func (w *Img) Move(sp image.Point)     { w.Sp = sp }
-func (w *Img) NextEvent() (e interface{}) {
-	switch e := w.Window().NextEvent().(type) {
-	case mouse.Event:
-		e.X -= float32(w.Sp.X)
-		e.Y -= float32(w.Sp.Y)
-		return e
-	case interface{}:
-		return e
-	}
-	return nil
-}
 func (w *Img) Origin() int64 { return w.org }
 func (w *Img) Refresh() {
 	w.Upload()
@@ -107,12 +95,6 @@ func (w *Img) Upload() {
 	draw.Draw(b.RGBA(), b.RGBA().Bounds(), w.img, w.img.Bounds().Min, draw.Src)
 	w.Window().Upload(r.Min, w.b, r)
 	w.dirty = false
-}
-func (w *Img) Send(e interface{}) {
-	w.Window().Send(e)
-}
-func (w *Img) SendFirst(e interface{}) {
-	w.Window().SendFirst(e)
 }
 func (w *Img) Resize(size image.Point) {
 	b := w.NewBuffer(size)
