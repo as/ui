@@ -9,7 +9,7 @@ import (
 type Window interface {
 	Bytes() []byte
 
-	Select(q0, q1 int64) (int64, int64)
+	Select(q0, q1 int64) 
 	SetOrigin(org int64, exact bool)
 	Dot() (int64, int64)
 	Len() int64

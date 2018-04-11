@@ -5,6 +5,8 @@ import (
 	"bytes"
 	"fmt"
 	"image"
+	"image/color"
+	"image/draw"
 	"log"
 	"os"
 	"strings"
@@ -110,7 +112,7 @@ type Config struct {
 	Body       *win.Config
 	Ctl        chan interface{}
 	Filesystem fs.Fs
-	Image bool	// Image makes win.Win ->img.Img instead
+	Image      bool // Image makes win.Win ->img.Img instead
 }
 
 func (c *Config) TagConfig() *win.Config {
@@ -139,7 +141,7 @@ func (c *Config) WinConfig() *win.Config {
 func New(dev *ui.Dev, sp, size image.Point, conf *Config) *Tag {
 	if conf == nil {
 		conf = &Config{
-			Image: true,
+			Image:      true,
 			FaceHeight: 11,
 			Facer:      font.NewFace,
 			Margin:     image.Pt(15, 15),
@@ -166,9 +168,9 @@ func New(dev *ui.Dev, sp, size image.Point, conf *Config) *Tag {
 	}
 
 	var w Window
-	if conf.Image && size.X > 50 && size.Y > 50{
+	if conf.Image && size.X > 50 && size.Y > 50 {
 		iconf := &img.Config{
-			Margin: image.Pt(15,15),
+			Margin: image.Pt(15, 15),
 		}
 		w = img.New(dev, sp, image.Pt(size.X, tagY), iconf)
 	} else {
@@ -529,12 +531,21 @@ func (t *Tag) Handle(act text.Editor, e interface{}) {
 	t.dirty = true
 }
 
+var (
+	crimson = image.NewUniform(color.RGBA{70, 40, 56, 255})
+)
+
 func (t *Tag) Upload(wind screen.Window) {
 	var wg sync.WaitGroup
 	defer wg.Wait()
 	if t.Body != nil && t.Body.Dirty() {
 		wg.Add(1)
 		go func() {
+			{
+				dst := t.Win.Buffer().RGBA()
+				src := crimson
+				draw.Draw(dst, image.Rect(0, 0, 8, 8).Add(t.Win.Bounds().Min), src, image.ZP, draw.Src)
+			}
 			t.Body.Upload()
 			wg.Done()
 		}()
