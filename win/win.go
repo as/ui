@@ -146,6 +146,10 @@ func (w *Win) Close() error {
 }
 
 func (w *Win) Resize(size image.Point) {
+	if size.X < 2 || size.Y < 2{
+		size.X=2
+		size.Y=2
+	}
 	b := w.NewBuffer(size)
 	w.size = size
 	w.b.Release()
@@ -240,6 +244,12 @@ func (w *Win) ReadAt(off int64, p []byte) (n int, err error) {
 	}
 	return copy(p, w.Bytes()[off:w.Len()]), err
 }
+
+func (w *Win) Readsel() ([]byte){
+	q0,q1 := w.Dot()
+	return w.Bytes()[q0:q1]
+}
+
 
 func (w *Win) Read(p []byte) (n int, err error) {
 	return 0, nil
