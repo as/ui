@@ -17,7 +17,7 @@ type Node struct {
 }
 
 func (n Node) Size() image.Point {
-	return n.Size()
+	return n.size
 }
 func (n Node) Pad() image.Point {
 	return n.Sp.Add(n.pad)
