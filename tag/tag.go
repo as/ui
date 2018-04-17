@@ -293,9 +293,6 @@ func (t *Tag) Get(name string) {
 		return
 	}
 	abs = filepath.Join(t.basedir, name)
-	if !path.Exists(abs) {
-		//
-	}
 	t.fixtag(abs)
 	t.getbody(abs, addr)
 }
