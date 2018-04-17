@@ -574,15 +574,3 @@ func (t *Tag) Refresh() {
 		}()
 	}
 }
-
-func isdir(path string) bool {
-	fi, err := os.Stat(path)
-	if err != nil {
-		if err == os.ErrNotExist {
-			return false
-		}
-		fmt.Println(err)
-		return false
-	}
-	return fi.IsDir()
-}

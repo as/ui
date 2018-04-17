@@ -65,8 +65,7 @@ func (d *Dev) NewBuffer(size image.Point) screen.Buffer {
 }
 
 type Node struct {
-	sp, size, pad image.Point
-	dirty         bool
+	sp, size image.Point
 }
 
 func (n Node) Move(pt image.Point) {
@@ -78,7 +77,7 @@ func (n Node) Resize(pt image.Point) {
 }
 
 func (n Node) Size() image.Point {
-	return n.Size()
+	return n.size
 }
 
 func (n Node) Pad() image.Point {

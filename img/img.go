@@ -44,7 +44,6 @@ type Img struct {
 }
 
 type ScrollBar struct {
-	bar     image.Rectangle
 	Scrollr image.Rectangle
 }
 

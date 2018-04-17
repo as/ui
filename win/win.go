@@ -35,7 +35,6 @@ type Win struct {
 	org      int64
 	Sq       int64
 	inverted int
-	donec    chan bool
 	UserFunc func(*Win)
 	ctl      chan interface{}
 }
@@ -128,19 +127,12 @@ func (w Win) Loc() image.Rectangle {
 func (w *Win) Close() error {
 	if w.Frame != nil {
 		w.Frame.Close()
-		w.Frame = nil
 	}
 	if w.b != nil {
 		w.b.Release()
-		w.b = nil
 	}
 	if w.Editor != nil {
 		w.Editor.Close()
-		w.Editor = nil
-	}
-	if w.donec != nil {
-		close(w.donec)
-		w.donec = nil
 	}
 	return nil
 }
