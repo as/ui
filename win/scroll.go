@@ -36,11 +36,20 @@ func (w *Win) Scroll(dl int) {
 		org = w.backNL(org, -dl)
 		w.SetOrigin(org, true)
 	} else {
+		// TODO(as): Forward scrolling will be broken in non-graphical mode
+		// Needs to be fixed here
+		if !w.graphical() {
+			return
+		}
 		if org+w.Frame.Nchars == w.Len() {
 			return
 		}
 		r := w.Frame.Bounds()
-		mul := int64(dl / w.Frame.Line())
+		nline := w.Frame.Line()
+		if nline == 0 {
+			nline = 1
+		}
+		mul := int64(dl / nline)
 		if mul == 0 {
 			mul++
 		}

@@ -24,7 +24,7 @@ func (n Node) Pad() image.Point {
 }
 
 type Config struct {
-	Name string
+	Name   string
 	Margin image.Point
 	Editor text.Editor
 
@@ -35,7 +35,7 @@ type Config struct {
 
 type Img struct {
 	Node
-	*ui.Dev
+	ui.Dev
 	img image.Image
 	b   screen.Buffer
 	ScrollBar
@@ -47,10 +47,9 @@ type ScrollBar struct {
 	Scrollr image.Rectangle
 }
 
-
-func New(dev *ui.Dev, sp, size image.Point, conf *Config) *Img {
+func New(dev ui.Dev, sp, size image.Point, conf *Config) *Img {
 	ed, _ := text.Open(text.NewBuffer())
-	b := dev.NewBuffer(size)
+	b, _ := dev.NewBuffer(size)
 	var img image.Image
 	if ed.Len() != 0 {
 		img, _, _ = image.Decode(bytes.NewReader(ed.Bytes()))
@@ -117,7 +116,7 @@ func (w *Img) Resize(size image.Point) {
 	if size.Y < 100 {
 		size.Y = 100
 	}
-	b := w.NewBuffer(size)
+	b, _ := w.NewBuffer(size)
 	w.size = size
 	w.b.Release()
 	w.b = b

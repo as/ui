@@ -10,7 +10,6 @@ func (w *Win) SetOrigin(org int64, exact bool) {
 	if org == w.org {
 		return
 	}
-	w.Mark()
 	if org > 0 && !exact {
 		for i := 0; i < 2048 && org < w.Len(); i++ {
 			if w.Bytes()[org] == '\n' {
@@ -20,8 +19,14 @@ func (w *Win) SetOrigin(org int64, exact bool) {
 			org++
 		}
 	}
-	w.setOrigin(clamp(org, 0, w.Len()))
-	w.UserFunc(w)
+	if w.graphical() {
+		w.setOrigin(clamp(org, 0, w.Len()))
+		w.Mark()
+		w.UserFunc(w)
+	} else {
+		w.org = org
+		w.dirty = true
+	}
 }
 
 func (w *Win) setOrigin(org int64) {

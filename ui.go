@@ -33,13 +33,19 @@ type Win interface {
 	Move(sp image.Point)
 }
 
-type Dev struct {
+type Dev interface {
+	NewBuffer(size image.Point) (screen.Buffer, error)
+	Screen() screen.Screen
+	Window() screen.Window
+}
+
+type dev struct {
 	scr    screen.Screen
 	events screen.Window
 	killc  chan bool
 }
 
-func Init(opts *screen.NewWindowOptions) (dev *Dev, err error) {
+func Init(opts *screen.NewWindowOptions) (device Dev, err error) {
 	errc := make(chan error)
 	go func(errc chan error) {
 		driver.Main(func(scr screen.Screen) {
@@ -47,39 +53,36 @@ func Init(opts *screen.NewWindowOptions) (dev *Dev, err error) {
 			if err != nil {
 				errc <- err
 			}
-			dev = &Dev{scr, wind, make(chan bool)}
+			d := &dev{scr, wind, make(chan bool)}
+			device = d
 			errc <- err
-			<-dev.killc
+			<-d.killc
 		})
 	}(errc)
-	return dev, <-errc
+	return device, <-errc
 }
-func (d *Dev) Screen() screen.Screen { return d.scr }
-func (d *Dev) Window() screen.Window { return d.events }
-func (d *Dev) NewBuffer(size image.Point) screen.Buffer {
-	b, err := d.scr.NewBuffer(size)
-	if err != nil {
-		panic(err)
-	}
-	return b
+func (d *dev) Screen() screen.Screen { return d.scr }
+func (d *dev) Window() screen.Window { return d.events }
+func (d *dev) NewBuffer(size image.Point) (screen.Buffer, error) {
+	return d.scr.NewBuffer(size)
 }
 
 type Node struct {
 	sp, size image.Point
 }
 
-func (n Node) Move(pt image.Point) {
+func (n *Node) Move(pt image.Point) {
 	n.sp = pt
 }
 
-func (n Node) Resize(pt image.Point) {
+func (n *Node) Resize(pt image.Point) {
 	n.size = pt
 }
 
-func (n Node) Size() image.Point {
+func (n *Node) Size() image.Point {
 	return n.size
 }
 
-func (n Node) Pad() image.Point {
+func (n *Node) Pad() image.Point {
 	return n.sp.Add(n.Size())
 }

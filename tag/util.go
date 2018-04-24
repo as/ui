@@ -21,13 +21,12 @@ func (t *Tag) dirfmt(p []byte) []byte {
 	if win == nil {
 		return nil
 	}
-
-	dx := win.Face.Dx([]byte{'e'}) // common lowercase rune
-	maxx := win.Frame.Bounds().Dx()
-
-	win.Frame.SetFlags(win.Frame.Flags() | frame.FrElastic)
-
-	x := 0
+	x, dx, maxx := 0, 8, 600
+	if win.Graphical() {
+		dx = win.Face.Dx([]byte{'e'}) // common lowercase rune
+		maxx = win.Frame.Bounds().Dx()
+		win.Frame.SetFlags(win.Frame.Flags() | frame.FrElastic)
+	}
 	w := new(bytes.Buffer)
 	for _, nm := range bytes.Split(p, []byte{'\t'}) {
 		word := fmt.Sprintf("\t%s", nm)
