@@ -43,7 +43,42 @@ func TestNewBasic(t *testing.T) {
 	}
 }
 
+func testNewColHasNoEntries(t *testing.T, c *Col) {
+	t.Helper()
+	if len(c.List) != 0 {
+		t.Fatalf("list has %v entries: %#v", len(c.List), c.List)
+	}
+}
+
+func TestMoveNoSizeChange(t *testing.T) {
+	r := image.Rect(55, 55, 155, 155)
+	c := New(etch, r.Min, r.Size(), nil)
+	testNonNil(t, c)
+	testNewColHasNoEntries(t, c)
+
+	sr := image.Rect(0, 0, 1000, 1000)
+	etch.Blank()
+	c.Upload(etch.Window())
+	img0 := etch.Screenshot(sr)
+
+	size0 := c.Loc().Size()
+	c.Move(image.Pt(55, 55))
+	testNewColHasNoEntries(t, c)
+
+	c.Upload(etch.Window())
+	img1 := etch.Screenshot(sr)
+
+	size1 := c.Loc().Size()
+	if size0 != size1 {
+		t.Fatalf("size changed across calls to move: %s -move-> %s", size0, size1)
+	}
+
+	etcher.Assertf(t, img0, img1, "TestMoveNoSizeChange.png", "column size changed after move")
+
+}
+
 func TestNew(t *testing.T) {
+	t.Skip()
 	r := image.Rect(55, 55, 1000, 1000)
 	c := New(etch, r.Min, r.Size(), nil)
 	testNonNil(t, c)
