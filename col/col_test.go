@@ -1,11 +1,13 @@
 package col
 
 import (
-	etcher "github.com/as/etch"
-	"github.com/as/ui"
 	"image"
 	"os"
 	"testing"
+
+	etcher "github.com/as/etch"
+	"github.com/as/ui"
+	"github.com/as/ui/tag"
 )
 
 var etch *ui.Etch
@@ -65,16 +67,67 @@ func TestMoveNoSizeChange(t *testing.T) {
 	c.Move(image.Pt(55, 55))
 	testNewColHasNoEntries(t, c)
 
-	c.Upload(etch.Window())
-	img1 := etch.Screenshot(sr)
-
 	size1 := c.Loc().Size()
 	if size0 != size1 {
 		t.Fatalf("size changed across calls to move: %s -move-> %s", size0, size1)
 	}
 
+	c.Upload(etch.Window())
+	img1 := etch.Screenshot(sr)
 	etcher.Assertf(t, img0, img1, "TestMoveNoSizeChange.png", "column size changed after move")
+}
 
+func TestAttachCoherence(t *testing.T) {
+	r := image.Rect(55, 55, 155, 1024)
+	tt := tag.New(etch, r.Min, r.Size(), nil)
+	tt2 := tag.New(etch, r.Min, r.Size(), nil)
+	c := New(etch, r.Min, r.Size(), nil)
+	c.Attach(tt, 300)
+	c.Attach(tt2, 500)
+
+	y0 := c.Loc().Max.Y
+	y1 := c.List[len(c.List)-1].Loc().Max.Y
+	if y1 > y0 {
+		t.Fatalf("extended y: %d < %d", y0, y1)
+		etch.WritePNG("TestAttachCoherence.png")
+	}
+	c.Refresh()
+	c.Tag.Insert([]byte("The"), 0)
+	tt.Win.Insert([]byte("Quick"), 0)
+	tt.Body.Insert([]byte("Brown"), 0)
+	tt2.Body.Insert([]byte("Fox"), 0)
+	c.Move(image.Pt(500, 1))
+	c.Refresh()
+	c.Upload(etch.Window())
+	c.Move(image.Pt(700, 10))
+	c.Resize(c.Loc().Size().Add(image.Pt(100, 0)))
+	if c.Loc().Size().Y != c.Loc().Size().Y {
+		t.Fatalf("attach extended y-axis: %d -> %d", r.Size().Y, c.Loc().Size().Y)
+	}
+	c.Refresh()
+	c.Upload(etch.Window())
+}
+
+func TestAttach(t *testing.T) {
+	r := image.Rect(55, 55, 155, 1555)
+	tt := tag.New(etch, r.Min, r.Size(), nil)
+	tt2 := tag.New(etch, r.Min, r.Size(), nil)
+	c := New(etch, r.Min, r.Size(), nil)
+	c.Attach(tt, 1555)
+	c.Attach(tt2, 700)
+	c.Refresh()
+	c.Tag.Insert([]byte("The"), 0)
+	tt.Win.Insert([]byte("Quick"), 0)
+	tt.Body.Insert([]byte("Brown"), 0)
+	tt2.Body.Insert([]byte("Fox"), 0)
+	c.Move(image.Pt(500, 1))
+	c.Refresh()
+	c.Upload(etch.Window())
+	c.Move(image.Pt(700, 10))
+	c.Resize(c.Loc().Size().Add(image.Pt(100, 0)))
+	c.Refresh()
+	c.Upload(etch.Window())
+	etch.WritePNG("TestAttach.png")
 }
 
 func TestNew(t *testing.T) {
@@ -106,10 +159,10 @@ func TestNew(t *testing.T) {
 
 	etch.Blank()
 	{
-		//c.Upload(etch.Window())
+		c.Upload(etch.Window())
 	}
 	img1 := etch.Screenshot(r)
-	t.Skip("the scrollbar colors dont match; thats fine for now")
+	//	t.Skip("the scrollbar colors dont match; thats fine for now")
 	etcher.Assertf(t, img0, img1, "TestNew.png", "TestNew")
 }
 

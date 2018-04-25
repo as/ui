@@ -96,6 +96,7 @@ func New(dev ui.Dev, sp, size image.Point, conf *Config) *Win {
 		UserFunc: func(w *Win) {},
 		Config:   conf,
 	}
+	w.Move(sp)
 	w.Resize(size)
 	return w
 }
@@ -265,7 +266,6 @@ func (w *Win) Len() int64 {
 
 func (w *Win) Refresh() {
 	if !w.graphical() {
-		println("EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE!!!!!!!!!!!!!!!!!")
 		return
 	}
 	w.Frame.Refresh()

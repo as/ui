@@ -48,12 +48,13 @@ func p(e mouse.Event) image.Point {
 
 type Tag struct {
 	Vis
+	sp   image.Point
+	size image.Point
+
 	*win.Win
 	Body      Window //*win.Win
 	Scrolling bool
 	fs.Fs
-
-	sp image.Point
 
 	basedir string
 	dirty   bool
@@ -62,6 +63,24 @@ type Tag struct {
 
 	ctl    chan<- interface{}
 	Config *Config
+}
+
+func New(dev ui.Dev, sp, size image.Point, conf *Config) *Tag {
+	conf = validConfig(conf)
+	wd, _ := os.Getwd() // TODO(as): BUG!!!
+	wsp := image.Pt(sp.X, sp.Y+conf.TagHeight())
+	t := &Tag{
+		sp:      sp,
+		basedir: wd,
+		Fs:      conf.Filesystem,
+		Win:     win.New(dev, sp, image.ZP, conf.TagConfig()),
+		Body:    win.New(dev, wsp, image.ZP, conf.WinConfig()),
+		ctl:     conf.Ctl,
+		Config:  conf,
+	}
+	t.Move(sp)
+	t.Resize(size)
+	return t
 }
 
 func (w *Tag) SetFont(ft font.Face) {
@@ -85,23 +104,6 @@ func (t *Tag) Dirty() bool {
 func (t *Tag) Mark() {
 	t.dirty = true
 	t.Win.Mark()
-}
-
-func New(dev ui.Dev, sp, size image.Point, conf *Config) *Tag {
-	conf = validConfig(conf)
-	wd, _ := os.Getwd() // TODO(as): BUG!!!
-	wsp := image.Pt(sp.X, sp.Y+conf.TagHeight())
-	t := &Tag{
-		sp:      sp,
-		basedir: wd,
-		Fs:      conf.Filesystem,
-		Win:     win.New(dev, sp, sp, conf.TagConfig()),
-		Body:    win.New(dev, wsp, wsp, conf.WinConfig()),
-		ctl:     conf.Ctl,
-		Config:  conf,
-	}
-	t.Resize(size)
-	return t
 }
 
 func mustCompile(prog string) *edit.Command {

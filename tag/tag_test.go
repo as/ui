@@ -1,11 +1,13 @@
 package tag
 
 import (
-	etcher "github.com/as/etch"
-	"github.com/as/ui"
+	"fmt"
 	"image"
 	"os"
 	"testing"
+
+	etcher "github.com/as/etch"
+	"github.com/as/ui"
 )
 
 var etch *ui.Etch
@@ -13,27 +15,6 @@ var etch *ui.Etch
 func TestMain(m *testing.M) {
 	etch = ui.NewEtch()
 	os.Exit(m.Run())
-}
-
-func wantshape(t *testing.T, tt *Tag, want image.Rectangle) {
-	t.Helper()
-	if tt.Bounds() != want {
-		t.Fatalf("wantshape: %s, have %s", want, tt.Bounds())
-	}
-}
-
-func testNonNil(t *testing.T, tt *Tag) {
-	t.Helper()
-	if tt == nil {
-		t.Fatalf("tag: tag is nil")
-	}
-
-	if tt.Win == nil {
-		t.Fatalf("tag: label is nil")
-	}
-	if tt.Body == nil {
-		t.Fatalf("tag: body is nil")
-	}
 }
 
 func TestNew(t *testing.T) {
@@ -118,28 +99,71 @@ func (s sizeentry) Want() image.Rectangle {
 	return image.Rect(s.x, s.y, s.xx, s.yy)
 }
 
+func testVisibility(t *testing.T, tt *Tag) {
+	t.Helper()
+	r := tt.Loc()
+	tt.Move(r.Min)
+	vis := tt.Vis
+	if tt.Loc() != r {
+		t.Fatalf("tag dimensions changed after 0-Move: %s -> %s", r, tt.Loc())
+	}
+	pt := r.Min
+	tt.Move(r.Min.Add(image.Pt(10000, 10000)))
+	defer tt.Move(pt)
+	if tt.Loc().Size() != r.Size() {
+		t.Fatalf("tag size changed after Move 10k : %s -> %s", r.Size(), tt.Loc().Size())
+	}
+	if tt.Vis != vis {
+		t.Fatalf("tag visibility changed after Move: %v -> %v", vis, tt.Vis)
+	}
+}
+
 func TestResize(t *testing.T) {
+	for i, r := range []image.Rectangle{
+		image.Rect(0, 0, 0, 0),
+		image.Rect(0, 0, 1000, 22),
+		image.Rect(0, 0, 1000, 23),
+		image.Rect(0, 0, 1000, 1000),
+	} {
+		name := fmt.Sprintf("%d/a: r=%s", i, r.Bounds())
+		tt := New(etch, r.Min, r.Size(), nil)
+		testResize(t, name, tt)
+
+		name = fmt.Sprintf("%d/b: r=%s", i, r.Bounds())
+		tt = New(etch, image.ZP, image.ZP, nil)
+		tt.Move(r.Min)
+		tt.Resize(r.Size())
+		testResize(t, name, tt)
+	}
+}
+
+func testResize(t *testing.T, name string, tt *Tag) {
 	var sizetab = []sizeentry{
 		{0, 0, 0, 0, 0, 0, 0, 0, VisNone},
-		{0, 0, 4, 4, 0, 0, 4, 0, VisNone},    // TODO(as): det. if this behavior is actualy desirable
-		{0, 0, 10, 10, 0, 0, 10, 0, VisNone}, // TODO(as): det. if this behavior is actualy desirable
-		{0, 0, 11, 11, 0, 0, 11, 0, VisNone}, // TODO(as): det. if this behavior is actualy desirable
-		{0, 0, 12, 12, 0, 0, 12, 0, VisNone}, // TODO(as): det. if this behavior is actualy desirable
-		{0, 0, 22, 22, 0, 0, 22, 22, VisTag}, // TODO(as): det. if this behavior is actualy desirable
+		{9, 9, 0, 0, 9, 9, 9, 9, VisNone}, // Hidden != image.ZR
+		{0, 0, 4, 4, 0, 0, 4, 0, VisNone},
+		{0, 0, 10, 10, 0, 0, 10, 0, VisNone},
+		{0, 0, 11, 11, 0, 0, 11, 0, VisNone},
+		{0, 0, 12, 12, 0, 0, 12, 0, VisNone},
+		{0, 0, 22, 22, 0, 0, 22, 22, VisTag},
+		//		{0, 0, 23, 23, 0, 0, 23, 23, VisTag},
 		{0, 0, 1000, 1000, 0, 0, 1000, 1000, VisFull},
 		{0, 0, 500, 500, 0, 0, 500, 500, VisFull},
 		{0, 0, 250, 250, 0, 0, 250, 250, VisFull},
 		{0, 0, 50, 50, 0, 0, 50, 50, VisFull},
 		{0, 0, 1000, 1000, 0, 0, 1000, 1000, VisFull},
 	}
-	tt := New(etch, image.ZP, image.Pt(1000, 1000), nil)
-	wantshape(t, tt, image.Rect(0, 0, 1000, 1000))
+	//	wantshape(t, tt, image.Rect(0, 0, 1000, 1000))
 	for i, v := range sizetab {
+		testVisibility(t, tt)
 		tt.Resize(v.Size())
-		wantshape(t, tt, v.Want())
+		tt.Move(v.Sp())
+		wantshapePrefix(t, "after resize to: "+v.Size().String(), tt, v.Want())
+
 		if v.vis != tt.Vis {
-			t.Fatalf("%d: visibility doesn't match: have %v, want %v", i, tt.Vis, v.vis)
+			t.Fatalf("%s: %d: visibility doesn't match: have %v, want %v", name, i, tt.Vis, v.vis)
 		}
+		testVisibility(t, tt)
 	}
 }
 
@@ -173,6 +197,34 @@ func TestLocation(t *testing.T) {
 	ckLayout(t, tt)
 	tt.Move(image.Pt(25, 25))
 	wantshape(t, tt, image.Rect(25, 25, 1025, 1025))
+}
+
+func wantshape(t *testing.T, tt *Tag, want image.Rectangle) {
+	t.Helper()
+	if tt.Bounds() != want {
+		t.Fatalf("wantshape: %s, have %s", want, tt.Bounds())
+	}
+}
+
+func wantshapePrefix(t *testing.T, msg string, tt *Tag, want image.Rectangle) {
+	t.Helper()
+	if tt.Bounds() != want {
+		t.Fatalf("%s: wantshape: %s, have %s", msg, want, tt.Bounds())
+	}
+}
+
+func testNonNil(t *testing.T, tt *Tag) {
+	t.Helper()
+	if tt == nil {
+		t.Fatalf("tag: tag is nil")
+	}
+
+	if tt.Win == nil {
+		t.Fatalf("tag: label is nil")
+	}
+	if tt.Body == nil {
+		t.Fatalf("tag: body is nil")
+	}
 }
 
 func ckLayout(t *testing.T, tt *Tag) {

@@ -24,16 +24,16 @@ func (co *Col) Attach(src Plane, y int) {
 		co.fill()
 		return
 	}
+	did := co.IDPoint(pt)
 	pt.Y = y
 	src.Move(pt)
-	did := co.IDPoint(pt)
-	co.attach(src, did)
+	co.attach(src, did+1)
 	co.fill()
 }
 
 // attach inserts w in position id, shifting the original forwards
 func (co *Col) attach(w Plane, id int) {
-	if id == len(co.List) {
+	if id >= len(co.List) {
 		co.List = append(co.List, w)
 		return
 	}
@@ -62,7 +62,7 @@ func (co *Col) Fill() {
 
 func (co *Col) fill() {
 	fill(co)
-	pt := image.Pt(co.size.X, co.size.Y)
+	pt := image.Pt(co.size.X, co.Tag.Loc().Dy())
 	co.Tag.Resize(pt)
 }
 
@@ -73,21 +73,25 @@ func fill(t Tile) {
 	for n := 0; n != t.Len(); n++ {
 		pt := t.Delta(n)
 		if pt == image.ZP {
-			return // TODO(as): panic here
+			//return // TODO(as): panic here
 			panic("zp")
 		}
 		k := t.Kid(n)
-		k.Resize(pt)
+		defer k.Resize(pt)
 	}
 }
 
 func (c *Col) Delta(n int) image.Point {
-	y0 := c.Tag.Loc().Max.Y
-	y1 := c.Loc().Max.Y
+	y0 := c.sp.Y + c.Tag.Loc().Dy()
+	y1 := c.sp.Y + c.size.Y
 
+	if n != 0 {
+		y0 = c.List[n].Loc().Min.Y
+	}
 	if n+1 != len(c.List) {
 		y1 = c.List[n+1].Loc().Min.Y
 	}
+	println(n, "yo", y1, "-", y0, "=", y1-y0)
 	return identity(c.size.X, y1-y0)
 }
 
