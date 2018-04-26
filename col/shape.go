@@ -2,45 +2,32 @@ package col
 
 import "image"
 
-func (co *Col) Loc() image.Rectangle {
-	if co == nil {
-		return image.ZR
-	}
-	return image.Rectangle{co.sp, co.sp.Add(co.size)}
-}
-
-func (co *Col) Move(sp image.Point) {
-	delta := sp.Sub(co.sp)
-	co.Tag.Move(co.Tag.Loc().Min.Add(delta))
-	for _, t := range co.List {
-		t.Move(t.Loc().Min.Add(delta))
-	}
-	co.sp = sp
-}
-
-func (co *Col) Resize(size image.Point) {
-	co.size = size
-	notesize(co.Tag)
-	pt := image.Pt(co.size.X, co.tdy)
-	co.Tag.Resize(pt)
-
-	co.fill()
-	for _, k := range co.List {
-		notesize(k)
-		k.Refresh()
-	}
-}
-
 type Axis interface {
 	Major(image.Point) image.Point
+	Minor(pt image.Point) image.Point
+	Area() image.Rectangle
 }
 
+// Area returns the bounds in which the list elements can reside
 func (c *Col) Area() image.Rectangle {
 	dy := c.Tag.Loc().Dy()
-	return image.Rect(c.sp.X, c.sp.Y+dy, c.sp.X+c.size.X, c.sp.Y+c.size.Y)
+	r := c.Loc()
+	r.Min.Y += dy
+	return r
 }
+
+// Minor returns the a point in Col where X is left-aligned
+// and Y is clamped between min.Y and max.Y
+func (c *Col) Minor(pt image.Point) image.Point {
+	pt.X = c.Area().Min.X
+	pt.Y = clamp(pt.Y, c.Area().Min.Y, c.Area().Max.Y)
+	return pt
+}
+
+// Major returns the a point in Col where X is right-aligned
+// and Y is clamped between min.Y and max.Y
 func (c *Col) Major(pt image.Point) image.Point {
-	pt.X = c.sp.X
+	pt.X = c.Area().Max.X
 	pt.Y = clamp(pt.Y, c.Area().Min.Y, c.Area().Max.Y)
 	return pt
 }

@@ -3,44 +3,15 @@ package col
 import (
 	"fmt"
 	"image"
-	"io"
 
 	"github.com/as/font"
 	"github.com/as/frame"
-	"github.com/as/shiny/screen"
 	"github.com/as/ui"
 	"github.com/as/ui/tag"
 )
 
-func (c *Col) Dev() ui.Dev                { return c.dev }
-func (c *Col) Face() font.Face            { return c.ft }
-func (c *Col) ForceSize(size image.Point) { c.size = size }
-
-func NewGridHack(dev ui.Dev, sp, size image.Point, tdy int, ft font.Face) *Col {
-	return &Col{
-		dev: dev,
-		tdy: tdy,
-		sp:  sp, size: size, ft: ft,
-	}
-}
-
-func (c *Col) AttachFill(src Plane, x int) {
-	c.attach(src, x)
-	c.fill()
-}
-func (c *Col) DetachFill(src Plane) {
-	c.detach(c.ID(src))
-	c.fill()
-}
-
 type Col struct {
-	dev  ui.Dev
-	ft   font.Face
-	sp   image.Point
-	size image.Point
-	tdy  int
-	Tag  *tag.Tag
-	List []Plane
+	Table2
 }
 
 var DefaultConfig = &tag.Config{
@@ -59,37 +30,21 @@ func New(dev ui.Dev, sp, size image.Point, conf *tag.Config) *Col {
 	if conf == nil {
 		conf = DefaultConfig
 	}
-	tdy := conf.TagHeight()
-
-	T := tag.New(dev, sp, image.Pt(size.X, tdy), conf)
-	T.Win.InsertString("New Delcol Sort	|", 0)
-
 	return &Col{
-		dev: dev,
-		sp:  sp, size: size,
-		ft:   conf.Facer(conf.FaceHeight),
-		tdy:  tdy,
-		Tag:  T,
-		List: make([]Plane, 0),
+		Table2: NewTable2(dev, sp, size, conf),
 	}
 }
 
-func (co *Col) FindName(name string) *tag.Tag {
-	for _, v := range co.List[1:] {
-		switch v := v.(type) {
-		case *Col:
-			t := v.FindName(name)
-			if t != nil {
-				return t
-			}
-		case *tag.Tag:
-			if v.FileName() == name {
-				return v
-			}
-
-		}
+func (co *Col) Resize(size image.Point) {
+	co.size = size
+	notesize(co.Tag)
+	pt := image.Pt(co.size.X, co.tdy)
+	co.Tag.Resize(pt)
+	Fill(co)
+	for _, k := range co.List {
+		notesize(k)
+		k.Refresh()
 	}
-	return nil
 }
 
 func (co *Col) RollDown(id int, dy int) {
@@ -105,21 +60,6 @@ func (co *Col) MoveWin(id int, y int) {
 	}
 	s := co.detach(id)
 	co.Attach(s, y)
-}
-
-func (co *Col) Upload(wind screen.Window) {
-	type Uploader interface {
-		Upload(screen.Window)
-		Dirty() bool
-	}
-	co.Tag.Upload(wind)
-	for _, t := range co.List {
-		if t, ok := t.(Uploader); ok {
-			//if co.Dirty() {
-			t.Upload(wind)
-			//	}
-		}
-	}
 }
 
 func (co *Col) Grow(id int, dy int) {
@@ -146,36 +86,6 @@ func (co *Col) RollUp(id int, dy int) {
 		pt.Y += co.tdy
 		co.List[x].Move(pt)
 	}
-	co.fill()
+	Fill(co)
 	co.Refresh()
-}
-func (co *Col) IDPoint(pt image.Point) (id int) {
-	for id = 0; id < len(co.List); id++ {
-		if pt.In(co.List[id].Loc()) {
-			break
-		}
-	}
-	return id
-}
-func (co *Col) ID(w Plane) (id int) {
-	for id = 0; id < len(co.List); id++ {
-		if w != nil && co.List[id] != nil && w == co.List[id] {
-			break
-		}
-	}
-	return id
-}
-
-func (co *Col) Close() error {
-	co.Tag.Close()
-	for _, t := range co.List {
-		if t == nil {
-			continue
-		}
-		if t, ok := t.(io.Closer); ok {
-			t.Close()
-		}
-	}
-	co.List = nil
-	return nil
 }

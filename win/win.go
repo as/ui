@@ -34,9 +34,12 @@ type Config struct {
 type Win struct {
 	*frame.Frame
 	ui.Dev
-	b screen.Buffer
+
+	b             screen.Buffer
+	sp, size, pad image.Point
+	dirty         bool
+
 	text.Editor
-	Node
 	ScrollBar
 	org      int64
 	Sq       int64
@@ -59,18 +62,6 @@ func (w *Win) Ctl() chan interface{} {
 	return w.ctl
 }
 
-type Node struct {
-	Sp, size, pad image.Point
-	dirty         bool
-}
-
-func (n Node) Size() image.Point {
-	return n.size
-}
-func (n Node) Pad() image.Point {
-	return n.Sp.Add(n.Size())
-}
-
 var DefaultConfig = Config{
 	Facer:  font.NewFace,
 	Margin: DefaultMargin,
@@ -89,8 +80,8 @@ func New(dev ui.Dev, sp, size image.Point, conf *Config) *Win {
 		ed, _ = text.Open(text.NewBuffer())
 	}
 	w := &Win{
-		ctl:      conf.Ctl,
-		Node:     Node{Sp: sp, size: size, pad: conf.Margin},
+		ctl: conf.Ctl,
+		sp:  sp, size: size, pad: conf.Margin,
 		Dev:      dev,
 		Editor:   ed,
 		UserFunc: func(w *Win) {},
@@ -153,11 +144,11 @@ func (w *Win) Size() image.Point {
 }
 
 func (w *Win) Bounds() image.Rectangle {
-	return image.Rectangle{w.Sp, w.Sp.Add(w.size)}
+	return image.Rectangle{w.sp, w.sp.Add(w.size)}
 }
 
 func (w Win) Loc() image.Rectangle {
-	return image.Rectangle{w.Sp, w.Sp.Add(w.size)}
+	return w.Bounds()
 }
 
 func (w *Win) Origin() int64 {
@@ -195,7 +186,7 @@ func (w *Win) Close() error {
 }
 
 func (w *Win) Move(sp image.Point) {
-	w.Sp = sp
+	w.sp = sp
 }
 
 func (w *Win) SetFont(ft font.Face) {
@@ -215,7 +206,7 @@ func (w *Win) Blank() {
 	if !w.graphical() {
 		return
 	}
-	r := w.b.RGBA().Bounds()
+	r := w.minbounds()
 	draw.Draw(
 		w.b.RGBA(),
 		r,
@@ -223,8 +214,9 @@ func (w *Win) Blank() {
 		image.ZP,
 		draw.Src,
 	)
-	if w.Sp.Y > 0 {
-		r.Min.Y--
+	if w.sp.Y > 0 {
+		println("win.go:/r.Min.Y--/")
+		//r.Min.Y--
 	}
 	w.Mark()
 	w.drawsb()
@@ -270,16 +262,19 @@ func (w *Win) Refresh() {
 	}
 	w.Frame.Refresh()
 	w.UserFunc(w)
-	w.Window().Upload(w.Sp, w.b, w.b.Bounds())
-	w.Flush()
-	w.dirty = false
+	w.dirty = true
+	w.Upload()
+}
+
+func (w Win) minbounds() image.Rectangle {
+	return image.Rectangle{image.ZP, w.Bounds().Size()}.Union(w.b.Bounds())
 }
 
 func (w *Win) Upload() {
 	if !w.dirty || !w.graphical() {
 		return
 	}
-	w.Window().Upload(w.Sp, w.b, w.b.Bounds())
+	w.Window().Upload(w.sp, w.b, w.minbounds())
 	w.Flush()
 	w.dirty = false
 }

@@ -101,7 +101,7 @@ func TestAttachCoherence(t *testing.T) {
 	c.Upload(etch.Window())
 	c.Move(image.Pt(700, 10))
 	c.Resize(c.Loc().Size().Add(image.Pt(100, 0)))
-	if c.Loc().Size().Y != c.Loc().Size().Y {
+	if c.Loc().Size().Y != r.Size().Y {
 		t.Fatalf("attach extended y-axis: %d -> %d", r.Size().Y, c.Loc().Size().Y)
 	}
 	c.Refresh()

@@ -15,6 +15,6 @@ func TestDelta(t *testing.T) {
 	c.Attach(tt, 300)
 	c.Attach(tt2, 400)
 	for n, v := range c.List {
-		t.Logf("%d: %v %s", n, c.Delta(n), v.Loc())
+		t.Logf("%d: %v %s", n, delta(c, n), v.Loc())
 	}
 }

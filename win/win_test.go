@@ -20,6 +20,9 @@ func wantshape(t *testing.T, w *Win, want image.Rectangle) {
 	if w.Bounds() != want {
 		t.Fatalf("wantshape: %s, have %s", want, w.Bounds())
 	}
+	if w.Bounds() != w.Loc() {
+		t.Fatalf("wantshape: loc %s != bounds %s", w.Loc(), w.Bounds())
+	}
 }
 func wantbytes(t *testing.T, w *Win, text interface{}) {
 	want := ""
