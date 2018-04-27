@@ -214,10 +214,6 @@ func (w *Win) Blank() {
 		image.ZP,
 		draw.Src,
 	)
-	if w.sp.Y > 0 {
-		println("win.go:/r.Min.Y--/")
-		//r.Min.Y--
-	}
 	w.Mark()
 	w.drawsb()
 }
