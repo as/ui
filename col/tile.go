@@ -44,15 +44,15 @@ func Fill(t Tile) {
 }
 
 func delta(c Tile, n int) image.Point {
-	y0 := c.Major(c.Loc().Min)
-	y1 := c.Major(c.Loc().Max)
-	if n != 0 {
-		y0 = c.Major(c.Kid(n).Loc().Min)
+	y0 := c.Minor(c.Area().Min)
+	y1 := c.Major(c.Area().Max)
+	if n != c.Len() {
+		y0 = c.Minor(c.Kid(n).Loc().Min)
 	}
 	if n+1 != c.Len() {
 		y1 = c.Major(c.Kid(n + 1).Loc().Min)
 	}
-	return c.Major(y1.Sub(y0))
+	return y1.Sub(y0)
 }
 
 func Detach(t Tile, id int) Plane {
