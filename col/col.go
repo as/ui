@@ -26,12 +26,12 @@ var DefaultConfig = &tag.Config{
 
 // New creates a new column with the device, font, source point
 // and size.
-func New(dev ui.Dev, sp, size image.Point, conf *tag.Config) *Col {
+func New(dev ui.Dev, conf *tag.Config) *Col {
 	if conf == nil {
 		conf = DefaultConfig
 	}
 	return &Col{
-		Table2: NewTable2(dev, sp, size, conf),
+		Table2: NewTable2(dev, conf),
 	}
 }
 

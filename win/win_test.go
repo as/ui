@@ -47,9 +47,11 @@ func wantdot(t *testing.T, w *Win, q0, q1 int64) {
 }
 
 func TestNewt(t *testing.T) {
-	w := New(etch, image.ZP, image.Pt(1000, 1000), nil)
+	w := New(etch, nil)
 	if w == nil {
+		t.Fatalf("window is nil")
 	}
+	w.Resize(image.Pt(1000, 1000))
 	if w.Loc() != image.Rect(0, 0, 1000, 1000) {
 		t.Fatalf("pure zero tag has non zero location: %s", w.Loc())
 	}
@@ -77,10 +79,12 @@ func TestLocation(t *testing.T) {
 			for y1 = 0; y1 < 103; y1 += 11 {
 				for x1 = 0; x1 < 107; x1 += 13 {
 					r = image.Rect(x0, y0, x1, y1)
-					w := New(etch, r.Min, r.Size(), nil)
+					w := New(etch, nil)
 					if w == nil {
 						t.Fatalf("%v: window is nil", r)
 					}
+					w.Move(r.Min)
+					w.Resize(r.Size())
 					if w.Loc() != r {
 						t.Fatalf("%v: bad location: %v", r, w.Loc())
 					}
@@ -109,7 +113,7 @@ func testStatelessCrashers(t *testing.T, w *Win) {
 
 func TestHiddenUnhide(t *testing.T) {
 	var in = []byte("hello")
-	w := New(etch, image.ZP, image.ZP, nil)
+	w := New(etch, nil)
 
 	wantshape(t, w, image.ZR)
 	w.Insert(in, 0)

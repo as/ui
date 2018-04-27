@@ -65,21 +65,17 @@ type Tag struct {
 	Config *Config
 }
 
-func New(dev ui.Dev, sp, size image.Point, conf *Config) *Tag {
+func New(dev ui.Dev, conf *Config) *Tag {
 	conf = validConfig(conf)
 	wd, _ := os.Getwd() // TODO(as): BUG!!!
-	wsp := image.Pt(sp.X, sp.Y+conf.TagHeight())
 	t := &Tag{
-		sp:      sp,
 		basedir: wd,
 		Fs:      conf.Filesystem,
-		Win:     win.New(dev, sp, image.ZP, conf.TagConfig()),
-		Body:    win.New(dev, wsp, image.ZP, conf.WinConfig()),
+		Win:     win.New(dev, conf.TagConfig()),
+		Body:    win.New(dev, conf.WinConfig()),
 		ctl:     conf.Ctl,
 		Config:  conf,
 	}
-	t.Move(sp)
-	t.Resize(size)
 	return t
 }
 

@@ -70,7 +70,7 @@ var DefaultConfig = Config{
 	},
 }
 
-func New(dev ui.Dev, sp, size image.Point, conf *Config) *Win {
+func New(dev ui.Dev, conf *Config) *Win {
 	if conf == nil {
 		c := DefaultConfig
 		conf = &c
@@ -80,15 +80,13 @@ func New(dev ui.Dev, sp, size image.Point, conf *Config) *Win {
 		ed, _ = text.Open(text.NewBuffer())
 	}
 	w := &Win{
-		ctl: conf.Ctl,
-		sp:  sp, size: size, pad: conf.Margin,
+		ctl:      conf.Ctl,
+		pad:      conf.Margin,
 		Dev:      dev,
 		Editor:   ed,
 		UserFunc: func(w *Win) {},
 		Config:   conf,
 	}
-	w.Move(sp)
-	w.Resize(size)
 	return w
 }
 

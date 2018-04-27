@@ -35,7 +35,9 @@ func TestNewBasic(t *testing.T) {
 		image.Rect(55, 55, 1000, 1000),
 		image.Rect(555, 555, 1000, 1000),
 	} {
-		c := New(etch, r.Min, r.Size(), nil)
+		c := New(etch, nil)
+		c.Move(r.Min)
+		c.Resize(r.Size())
 		testNonNil(t, c)
 		wantshape(t, c, r)
 		for _, pt := range []image.Point{{-1, -1}, {-1, 0}, {0, -1}, {0, 0}, {0, 1}, {1, 0}, {1, 1}} {
@@ -53,8 +55,10 @@ func testNewColHasNoEntries(t *testing.T, c *Col) {
 }
 
 func TestMoveNoSizeChange(t *testing.T) {
+	c := New(etch, nil)
 	r := image.Rect(55, 55, 155, 155)
-	c := New(etch, r.Min, r.Size(), nil)
+	c.Move(r.Min)
+	c.Resize(r.Size())
 	testNonNil(t, c)
 	testNewColHasNoEntries(t, c)
 
@@ -78,10 +82,12 @@ func TestMoveNoSizeChange(t *testing.T) {
 }
 
 func TestAttachCoherence(t *testing.T) {
+	tt := tag.New(etch, nil)
+	tt2 := tag.New(etch, nil)
+	c := New(etch, nil)
 	r := image.Rect(55, 55, 155, 1024)
-	tt := tag.New(etch, r.Min, r.Size(), nil)
-	tt2 := tag.New(etch, r.Min, r.Size(), nil)
-	c := New(etch, r.Min, r.Size(), nil)
+	c.Move(r.Min)
+	c.Resize(r.Size())
 	c.Attach(tt, 300)
 	c.Attach(tt2, 500)
 
@@ -109,10 +115,12 @@ func TestAttachCoherence(t *testing.T) {
 }
 
 func TestAttach(t *testing.T) {
+	tt := tag.New(etch, nil)
+	tt2 := tag.New(etch, nil)
+	c := New(etch, nil)
 	r := image.Rect(55, 55, 155, 1555)
-	tt := tag.New(etch, r.Min, r.Size(), nil)
-	tt2 := tag.New(etch, r.Min, r.Size(), nil)
-	c := New(etch, r.Min, r.Size(), nil)
+	c.Move(r.Min)
+	c.Resize(r.Size())
 	c.Attach(tt, 1555)
 	c.Attach(tt2, 700)
 	c.Refresh()
@@ -132,8 +140,10 @@ func TestAttach(t *testing.T) {
 
 func TestNew(t *testing.T) {
 	t.Skip()
+	c := New(etch, nil)
 	r := image.Rect(55, 55, 1000, 1000)
-	c := New(etch, r.Min, r.Size(), nil)
+	c.Move(r.Min)
+	c.Resize(r.Size())
 	testNonNil(t, c)
 
 	wantshape(t, c, r)
@@ -154,7 +164,7 @@ func TestNew(t *testing.T) {
 	}
 	img0 := etch.Screenshot(r)
 
-	c = New(etch, image.ZP, image.ZP, nil)
+	c = New(etch, nil)
 	testNonNil(t, c)
 
 	etch.Blank()

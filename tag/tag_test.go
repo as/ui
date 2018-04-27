@@ -19,7 +19,9 @@ func TestMain(m *testing.M) {
 
 func TestNew(t *testing.T) {
 	r := image.Rect(0, 0, 1000, 1000)
-	tt := New(etch, r.Min, r.Size(), nil)
+	tt := New(etch, nil)
+	tt.Move(r.Min)
+	tt.Resize(r.Size())
 	testNonNil(t, tt)
 
 	wantshape(t, tt, r)
@@ -35,7 +37,7 @@ func TestNew(t *testing.T) {
 	}
 	img0 := etch.Screenshot(r)
 
-	tt = New(etch, image.ZP, image.ZP, nil)
+	tt = New(etch, nil)
 	testNonNil(t, tt)
 	if tt.Win.Graphical() {
 		t.Fatalf("tag: tag label graphical (shouldnt be graphical; r=%s)", tt.Win.Loc())
@@ -54,7 +56,8 @@ func TestNew(t *testing.T) {
 }
 
 func TestNewDirty(t *testing.T) {
-	tt := New(etch, image.ZP, image.Pt(1000, 1000), nil)
+	tt := New(etch, nil)
+	tt.Resize(image.Pt(1000, 1000))
 	if !tt.Win.Dirty() {
 		t.Fatalf("new tag window shouldn't be clean")
 	}
@@ -64,7 +67,7 @@ func TestNewDirty(t *testing.T) {
 }
 
 func TestCreateZero(t *testing.T) {
-	tt := New(etch, image.ZP, image.ZP, nil)
+	tt := New(etch, nil)
 	if tt == nil {
 	}
 	if tt.Loc() != image.ZR {
@@ -126,11 +129,13 @@ func TestResize(t *testing.T) {
 		image.Rect(0, 0, 1000, 1000),
 	} {
 		name := fmt.Sprintf("%d/a: r=%s", i, r.Bounds())
-		tt := New(etch, r.Min, r.Size(), nil)
+		tt := New(etch, nil)
+		tt.Move(r.Min)
+		tt.Resize(r.Size())
 		testResize(t, name, tt)
 
 		name = fmt.Sprintf("%d/b: r=%s", i, r.Bounds())
-		tt = New(etch, image.ZP, image.ZP, nil)
+		tt = New(etch, nil)
 		tt.Move(r.Min)
 		tt.Resize(r.Size())
 		testResize(t, name, tt)
@@ -168,7 +173,8 @@ func testResize(t *testing.T, name string, tt *Tag) {
 }
 
 func TestResizeZero(t *testing.T) {
-	tt := New(etch, image.ZP, image.Pt(1000, 1000), nil)
+	tt := New(etch, nil)
+	tt.Resize(image.Pt(1000, 1000))
 	if tt == nil {
 	}
 	if tt.Loc() != image.Rect(0, 0, 1000, 1000) {
@@ -193,7 +199,8 @@ func TestResizeZero(t *testing.T) {
 }
 
 func TestLocation(t *testing.T) {
-	tt := New(etch, image.ZP, image.Pt(1000, 1000), nil)
+	tt := New(etch, nil)
+	tt.Resize(image.Pt(1000, 1000))
 	ckLayout(t, tt)
 	tt.Move(image.Pt(25, 25))
 	wantshape(t, tt, image.Rect(25, 25, 1025, 1025))

@@ -15,18 +15,20 @@ type Table2 struct {
 	size image.Point
 	tdy  int
 
+	Config *tag.Config
 	Table
 }
 
-func NewTable2(dev ui.Dev, sp, size image.Point, conf *tag.Config) Table2 {
-	T := tag.New(dev, sp, image.Pt(size.X, conf.TagHeight()), conf)
+func NewTable2(dev ui.Dev, conf *tag.Config) Table2 {
+	T := tag.New(dev, conf)
 	T.Win.InsertString("New Delcol Sort	|", 0)
+
 	return Table2{
-		dev: dev,
-		sp:  sp, size: size,
-		ft:    conf.Facer(conf.FaceHeight),
-		tdy:   conf.TagHeight(),
-		Table: Table{Tag: T},
+		dev:    dev,
+		ft:     conf.Facer(conf.FaceHeight),
+		tdy:    conf.TagHeight(),
+		Table:  Table{Tag: T},
+		Config: T.Config,
 	}
 }
 
