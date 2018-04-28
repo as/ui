@@ -27,12 +27,11 @@ import (
 )
 
 var (
-	DefaultFaceHeight = win.DefaultFaceHeight
-	DefaultMargin     = win.DefaultMargin
-	DefaultConfig     = Config{
+	DefaultLabelHeight = 11
+	DefaultConfig      = Config{
 		Image:      true,
-		FaceHeight: DefaultFaceHeight,
-		Margin:     DefaultMargin,
+		FaceHeight: DefaultLabelHeight,
+		Margin:     win.DefaultConfig.Margin,
 		Facer:      font.NewFace,
 		Color: [3]frame.Color{
 			0: frame.ATag1,

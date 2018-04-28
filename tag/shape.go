@@ -13,7 +13,7 @@ const (
 
 func Height(faceHeight int) int {
 	if faceHeight == 0 {
-		faceHeight = DefaultFaceHeight
+		faceHeight = DefaultConfig.FaceHeight
 	}
 	if faceHeight != 11 {
 		panic(faceHeight)
