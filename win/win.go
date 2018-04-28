@@ -12,20 +12,19 @@ import (
 	"github.com/as/ui/scroll"
 )
 
-type Facer func(int) font.Face
+type Facer func(int) font.Face //TODO(as): belongs in github.com/as/font
 
 var (
-	DefaultFaceHeight = 11
-	DefaultMargin     = image.Pt(13, 3)
-	MinRect           = image.Rect(0, 0, 10, 10)
+	MinRect = image.Rect(0, 0, 10, 10)
 )
 
 var DefaultConfig = Config{
 	Facer:  font.NewFace,
-	Margin: DefaultMargin,
+	Margin: image.Pt(13, 3),
 	Frame: &frame.Config{
-		Face: font.NewFace(DefaultFaceHeight),
+		Face: font.NewFace(11),
 	},
+	Scrollbar: true,
 }
 
 type Config struct {
@@ -34,6 +33,9 @@ type Config struct {
 	Margin image.Point
 	Frame  *frame.Config
 	Editor text.Editor
+
+	// Scrollbar enables and draws a shadow in the left margin of the window
+	Scrollbar bool
 
 	// Ctl is a channel provided by the window owner. It carries window messages
 	// back to the creator. Valid types are event.Look and event.Cmd
@@ -268,7 +270,6 @@ func (w Win) minbounds() image.Rectangle {
 }
 
 func (w *Win) Upload() {
-	w.dirty = true
 	if !w.dirty || !w.graphical() {
 		return
 	}

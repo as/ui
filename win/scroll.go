@@ -3,14 +3,13 @@ package win
 import (
 	"image"
 
-
 	"github.com/as/ui/scroll"
 )
 
 const minSbWidth = 10
 
 func (w *Win) Scroll(dl int) {
-	if dl == 0 {
+	if !w.Config.Scrollbar {
 		return
 	}
 	org := w.org
@@ -59,7 +58,7 @@ func (w *Win) clicksb(pt image.Point, dir int) {
 	case 1, -1:
 		//rat = (barY1 / ptY)
 		delta := int64(fl * w.sb.Delta(pt))
-		n += delta*int64(dir)
+		n += delta * int64(dir)
 	}
 	w.SetOrigin(n, false)
 	w.updatesb()
@@ -79,6 +78,9 @@ func (w *Win) scrollinit(pad image.Point) {
 }
 
 func (w *Win) updatesb() {
+	if !w.Config.Scrollbar {
+		return
+	}
 	rat0 := float64(w.org) / float64(w.Len())
 	rat1 := float64(w.org+w.Frame.Len()) / float64(w.Len())
 	w.dirty = w.sb.Put(rat0, rat1) || w.dirty
