@@ -38,8 +38,7 @@ func Fill(t Tile) {
 		if pt == image.ZP {
 			panic("zp")
 		}
-		k := t.Kid(n)
-		defer k.Resize(pt)
+		defer t.Kid(n).Resize(pt)
 	}
 }
 
@@ -59,9 +58,9 @@ func Detach(t Tile, id int) Plane {
 	return t.detach(id)
 }
 
-func (co *Col) Attach(src Plane, y int) {
-	Attach(co, src, image.Pt(0, y))
-}
+//func (co *Col) Attach(src Plane, y int) {
+//	Attach(co, src, image.Pt(0, y))
+//}
 
 func (co *Col) Detach(id int) Plane {
 	return Detach(co, id)

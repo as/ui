@@ -19,6 +19,14 @@ var (
 	MinRect           = image.Rect(0, 0, 10, 10)
 )
 
+var DefaultConfig = Config{
+	Facer:  font.NewFace,
+	Margin: DefaultMargin,
+	Frame: &frame.Config{
+		Face: font.NewFace(DefaultFaceHeight),
+	},
+}
+
 type Config struct {
 	Name string
 	Facer
@@ -34,20 +42,21 @@ type Config struct {
 type Win struct {
 	*frame.Frame
 	ui.Dev
+	ctl chan interface{}
 
-	b             screen.Buffer
-	sp, size, pad image.Point
-	dirty         bool
+	b                screen.Buffer
+	sp, size, margin image.Point
 
+	org int64
 	text.Editor
+	dirty bool
+
 	ScrollBar
-	org      int64
-	Sq       int64
+	Sq int64
+
 	inverted int
 	UserFunc func(*Win)
-	ctl      chan interface{}
-
-	Config *Config
+	Config   *Config
 }
 
 func (w *Win) Graphical() bool {
@@ -62,14 +71,6 @@ func (w *Win) Ctl() chan interface{} {
 	return w.ctl
 }
 
-var DefaultConfig = Config{
-	Facer:  font.NewFace,
-	Margin: DefaultMargin,
-	Frame: &frame.Config{
-		Face: font.NewFace(DefaultFaceHeight),
-	},
-}
-
 func New(dev ui.Dev, conf *Config) *Win {
 	if conf == nil {
 		c := DefaultConfig
@@ -80,9 +81,9 @@ func New(dev ui.Dev, conf *Config) *Win {
 		ed, _ = text.Open(text.NewBuffer())
 	}
 	w := &Win{
-		ctl:      conf.Ctl,
-		pad:      conf.Margin,
 		Dev:      dev,
+		ctl:      conf.Ctl,
+		margin:   conf.Margin,
 		Editor:   ed,
 		UserFunc: func(w *Win) {},
 		Config:   conf,
@@ -124,9 +125,10 @@ func (w *Win) Resize(size image.Point) {
 		return
 	}
 	w.dirty = true
-	w.Frame = frame.New(w.b.RGBA(), image.Rectangle{w.pad, w.size}, w.Config.Frame)
+	r := image.Rectangle{w.margin, w.size}
+	w.Frame = frame.New(w.b.RGBA(), r, w.Config.Frame)
 	w.init()
-	w.scrollinit(w.pad)
+	w.scrollinit(w.margin)
 	w.Refresh()
 }
 
@@ -191,7 +193,7 @@ func (w *Win) SetFont(ft font.Face) {
 	if ft.Height() < 4 {
 		return
 	}
-	r := image.Rectangle{w.pad, w.size}
+	r := image.Rectangle{w.margin, w.size}
 	w.Frame = frame.New(w.b.RGBA(), r, &frame.Config{Face: ft, Color: w.Frame.Color, Flag: w.Frame.Flags()})
 	w.Resize(w.size)
 }
@@ -265,6 +267,7 @@ func (w Win) minbounds() image.Rectangle {
 }
 
 func (w *Win) Upload() {
+	w.dirty = true
 	if !w.dirty || !w.graphical() {
 		return
 	}

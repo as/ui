@@ -58,8 +58,7 @@ func (co *Col) MoveWin(id int, y int) {
 	if y >= maxy {
 		return
 	}
-	s := co.detach(id)
-	co.Attach(s, y)
+	Attach(co, co.detach(id), image.Pt(0, y))
 }
 
 func (co *Col) Grow(id int, dy int) {

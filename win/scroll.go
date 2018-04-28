@@ -10,19 +10,105 @@ import (
 
 const minSbWidth = 10
 
+type Drawer interface {
+	Draw(dst draw.Image, r image.Rectangle, src image.Image, sp image.Point, op draw.Op)
+}
+
 type ScrollBar struct {
+	r       image.Rectangle
 	bar     image.Rectangle
-	Scrollr image.Rectangle
 	lastbar image.Rectangle
+	Fg, Bg  image.Image
+}
+
+func (s *ScrollBar) drawsb(dst draw.Image, d Drawer) bool {
+	if s.r == image.ZR {
+		return false
+	}
+	draw0 := draw.Draw
+	if d != nil {
+		draw0 = d.Draw
+	}
+
+	r0, r1, q0, q1 := s.bar.Min.Y, s.bar.Max.Y, s.lastbar.Min.Y, s.lastbar.Max.Y
+	//s.lastbar = s.bar
+	r := s.bar
+	switch region5(r0, r1, q0, q1) {
+	case -2, 2, 0: //w.Frame.RGBA()
+		draw0(dst, image.Rect(r.Min.X, q0, r.Max.X, q1), s.Bg, image.ZP, draw.Src)
+		draw0(dst, image.Rect(r.Min.X, r0, r.Max.X, r1), s.Fg, image.ZP, draw.Src)
+	case -1:
+		draw0(dst, image.Rect(r.Min.X, r1, r.Max.X, q1), s.Bg, image.ZP, draw.Src)
+		draw0(dst, image.Rect(r.Min.X, r0, r.Max.X, q0), s.Fg, image.ZP, draw.Src)
+	case 1:
+		draw0(dst, image.Rect(r.Min.X, q0, r.Max.X, r0), s.Bg, image.ZP, draw.Src)
+		draw0(dst, image.Rect(r.Min.X, q1, r.Max.X, r1), s.Fg, image.ZP, draw.Src)
+	}
+	return true
+}
+func (s ScrollBar) refreshsb(dst draw.Image, d Drawer) {
+	draw0 := draw.Draw
+	if d != nil {
+		draw0 = d.Draw
+	}
+	draw0(dst, s.r, s.Bg, image.ZP, draw.Src)
+	draw0(dst, s.bar, s.Fg, image.ZP, draw.Src)
+}
+
+func NewScrollBar(r image.Rectangle, fg, bg image.Image) (sb ScrollBar) {
+	sb.r = r
+	sb.Fg = fg
+	sb.Bg = bg
+	if bg == nil {
+		sb.Bg = frame.ATag0.Back
+	}
+	if fg == nil {
+		sb.Fg = LtGray
+	}
+	return sb
+}
+
+func (s *ScrollBar) update(advance, cover float64) bool {
+	r := s.r
+	if r == image.ZR {
+		return false
+	}
+
+	r.Min.Y += int(float64(r.Max.Y) * advance)
+	r.Max.Y = int(float64(r.Max.Y) * cover)
+	if have := r.Max.Y - r.Min.Y; have < 3 {
+		r.Max.Y = r.Min.Y + 3
+	}
+
+	r.Min.Y = clamp32(r.Min.Y, s.r.Min.Y, s.r.Max.Y)
+	r.Max.Y = clamp32(r.Max.Y, s.r.Min.Y, s.r.Max.Y)
+
+	//	if s.bar == r{
+	//		return false
+	//	}
+	s.lastbar = s.bar
+	s.bar = r
+	return true
+}
+
+func (w *Win) updatesb() {
+	if w.ScrollBar.r == image.ZR {
+		return
+	}
+	rat0 := float64(w.org) / float64(w.Len())               // % scrolled
+	rat1 := float64(w.org+w.Frame.Len()) / float64(w.Len()) // % covered by screen
+	w.dirty = w.ScrollBar.update(rat0, rat1) || w.dirty
 }
 
 func (w *Win) scrollinit(pad image.Point) {
-	w.Scrollr = image.ZR
-	if pad.X > minSbWidth+2 {
-		sr := w.Frame.RGBA().Bounds()
-		sr.Max.X = minSbWidth
-		w.Scrollr = sr
+	if w.Frame == nil {
+		return
 	}
+	sr := w.Frame.RGBA().Bounds()
+	if pad.X > minSbWidth+2 {
+		sr.Max.X = minSbWidth
+	}
+	w.ScrollBar = NewScrollBar(sr, nil, nil)
 	w.updatesb()
 	w.refreshsb()
 }
@@ -81,7 +167,7 @@ func (w *Win) clicksb(pt image.Point, dir int) {
 		delta := int64(fl * rat)
 		n -= delta
 	case 0:
-		rat := float64(pt.Y) / float64(w.Scrollr.Dy())
+		rat := float64(pt.Y) / float64(w.ScrollBar.r.Dy())
 		w.SetOrigin(int64(float64(w.Len())*rat), false)
 		w.updatesb()
 		return
@@ -105,59 +191,13 @@ func region5(r0, r1, q0, q1 int) int {
 }
 
 func (w *Win) drawsb() {
-	if w.Scrollr == image.ZR {
-		return
-	}
-	if w.bar == w.lastbar {
-		return
-	}
-	r0, r1, q0, q1 := w.bar.Min.Y, w.bar.Max.Y, w.lastbar.Min.Y, w.lastbar.Max.Y
-	w.lastbar = w.bar
-	r := w.bar
-	w.dirty = true
-	switch region5(r0, r1, q0, q1) {
-	case -2, 2, 0:
-		w.Frame.Draw(w.Frame.RGBA(), image.Rect(r.Min.X, q0, r.Max.X, q1), frame.ATag0.Back, image.ZP, draw.Src)
-		w.Frame.Draw(w.Frame.RGBA(), image.Rect(r.Min.X, r0, r.Max.X, r1), LtGray, image.ZP, draw.Src)
-	case -1:
-		w.Frame.Draw(w.Frame.RGBA(), image.Rect(r.Min.X, r1, r.Max.X, q1), frame.ATag0.Back, image.ZP, draw.Src)
-		w.Frame.Draw(w.Frame.RGBA(), image.Rect(r.Min.X, r0, r.Max.X, q0), LtGray, image.ZP, draw.Src)
-	case 1:
-		w.Frame.Draw(w.Frame.RGBA(), image.Rect(r.Min.X, q0, r.Max.X, r0), frame.ATag0.Back, image.ZP, draw.Src)
-		w.Frame.Draw(w.Frame.RGBA(), image.Rect(r.Min.X, q1, r.Max.X, r1), LtGray, image.ZP, draw.Src)
-		//	case 0:
-		//		col := frame.ATag0.Back // for a shrinking bar
-		//		if r0 < q0 {            // bar grows larger
-		//			col = LtGray
-		//		}
-		//		w.Frame.Draw(w.Frame.RGBA(), image.Rect(r.Min.X, r0, r.Max.X, q0), col, image.ZP, draw.Src)
-		//		w.Frame.Draw(w.Frame.RGBA(), image.Rect(r.Min.X, q1, r.Max.X, r1), col, image.ZP, draw.Src)
-	}
+	w.dirty = w.ScrollBar.drawsb(w.Frame.RGBA(), w.Frame) || w.dirty
 }
 func (w *Win) refreshsb() {
-	w.Frame.Draw(w.Frame.RGBA(), w.Scrollr, frame.ATag0.Back, image.ZP, draw.Src)
-	w.Frame.Draw(w.Frame.RGBA(), w.bar, LtGray, image.ZP, draw.Src)
-}
-
-func (w *Win) updatesb() {
-	r := w.Scrollr
-	if r == image.ZR {
-		return
-	}
-	rat0 := float64(w.org) / float64(w.Len()) // % scrolled
-	r.Min.Y += int(float64(r.Max.Y) * rat0)
-
-	rat1 := float64(w.org+w.Frame.Len()) / float64(w.Len()) // % covered by screen
-	r.Max.Y = int(float64(r.Max.Y) * rat1)                  //int(dy * rat1)
-	if have := r.Max.Y - r.Min.Y; have < 3 {
-		r.Max.Y = r.Min.Y + 3
-	}
+	w.ScrollBar.refreshsb(w.Frame.RGBA(), w.Frame)
 	w.dirty = true
-	r.Min.Y = clamp32(r.Min.Y, w.Scrollr.Min.Y, w.Scrollr.Max.Y)
-	r.Max.Y = clamp32(r.Max.Y, w.Scrollr.Min.Y, w.Scrollr.Max.Y)
-	w.lastbar = w.bar
-	w.bar = r
 }
+
 func clamp32(v, l, h int) int {
 	if v < l {
 		return l
