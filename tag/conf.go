@@ -32,7 +32,7 @@ func validConfig(c *Config) *Config {
 		c.Filesystem = &fs.Local{}
 	}
 	if c.FaceHeight == 0 {
-		c.FaceHeight = DefaultFaceHeight
+		c.FaceHeight = DefaultConfig.FaceHeight
 	}
 	return c
 }
@@ -54,9 +54,10 @@ func (c *Config) TagConfig() *win.Config {
 }
 func (c *Config) WinConfig() *win.Config {
 	return &win.Config{
-		Ctl:    c.Ctl,
-		Facer:  c.Facer,
-		Margin: c.Margin,
+		Ctl:       c.Ctl,
+		Facer:     c.Facer,
+		Margin:    c.Margin,
+		Scrollbar: true,
 		Frame: &frame.Config{
 			Color: c.Color[1],
 			Face:  c.Facer(c.FaceHeight),
