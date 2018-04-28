@@ -14,12 +14,12 @@ const (
 )
 
 var (
-	Mauve  = image.NewUniform(color.RGBA{150, 150, 220, 255})
-	LtGray = image.NewUniform(color.RGBA{160, 160, 170, 255})
+	Mauve  = image.NewUniform(color.RGBA{216, 216, 232, 255})
+	LtGray = image.NewUniform(color.RGBA{128 + 32 + 16, 128 + 32 + 16, 128 + 32 + 16 + 16, 255})
 )
 
 var (
-	DefaultColors = [...]image.Image{Mauve, LtGray}
+	DefaultColors = [...]image.Image{LtGray, Mauve}
 )
 
 type Drawer interface {
@@ -58,11 +58,10 @@ func New(r image.Rectangle, fg, bg image.Image) (b Bar) {
 // The delta 1.0 is valid, and means that the document's contents are beyond the
 // scroll bars representative client area.
 func (s *Bar) Put(delta, cover float64) bool {
-	r := s.r
-	if r == image.ZR {
+	if s.r == image.ZR {
 		return false
 	}
-
+	r := s.r
 	r.Min.Y += int(float64(r.Max.Y) * delta)
 	r.Max.Y = int(float64(r.Max.Y) * cover)
 	if have := r.Max.Y - r.Min.Y; have < 3 {
@@ -78,6 +77,19 @@ func (s *Bar) Put(delta, cover float64) bool {
 	s.lastbar = s.bar
 	s.bar = r
 	return true
+}
+
+// Delta returns the ratio representing how far down bar would be scrolled
+// it pt was its starting point.
+func (s Bar) Delta(pt image.Point) float64 {
+	return float64(pt.Y) / float64(s.r.Dy())
+}
+
+// Cover returns the coverage ratio of the current bar if its representative window
+// had the dimensions of the given size. Content is assumed to be uniform, which
+// may not be the case with line-wrapped text.
+func (s Bar) Cover(size image.Point) float64 {
+	return float64(s.bar.Dy()) / float64(size.Y)
 }
 
 // Update draws the modified regions of the bar on dst using an
@@ -111,6 +123,9 @@ func (s *Bar) Update(dst draw.Image, d Drawer) bool {
 
 // Refresh draws the entire scrollbar on dst using an optional drawer
 func (s Bar) Refresh(dst draw.Image, d Drawer) {
+	if s.r == image.ZR {
+		return
+	}
 	draw0 := draw.Draw
 	if d != nil {
 		draw0 = d.Draw
