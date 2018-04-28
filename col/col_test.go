@@ -88,8 +88,9 @@ func TestAttachCoherence(t *testing.T) {
 	r := image.Rect(55, 55, 155, 1024)
 	c.Move(r.Min)
 	c.Resize(r.Size())
-	c.Attach(tt, 300)
-	c.Attach(tt2, 500)
+	
+	Attach(c, tt, image.Pt(300,300))
+	Attach(c, tt2, image.Pt(500,500))
 
 	y0 := c.Loc().Max.Y
 	y1 := c.List[len(c.List)-1].Loc().Max.Y
@@ -121,8 +122,8 @@ func TestAttach(t *testing.T) {
 	r := image.Rect(55, 55, 155, 1555)
 	c.Move(r.Min)
 	c.Resize(r.Size())
-	c.Attach(tt, 1555)
-	c.Attach(tt2, 700)
+	Attach(c, tt, image.Pt(1555,1555))
+	Attach(c, tt2, image.Pt(700,700))
 	c.Refresh()
 	c.Tag.Insert([]byte("The"), 0)
 	tt.Win.Insert([]byte("Quick"), 0)
