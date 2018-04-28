@@ -5,7 +5,6 @@ import (
 	"bytes"
 	"image"
 	"image/color"
-	"image/draw"
 	"log"
 	"os"
 	"path/filepath"
@@ -188,9 +187,9 @@ func (t *Tag) Upload(wind screen.Window) {
 		wg.Add(1)
 		go func() {
 			{
-				dst := t.Win.Buffer().RGBA()
-				src := crimson
-				draw.Draw(dst, image.Rect(0, 0, 8, 8).Add(t.Win.Bounds().Min), src, image.ZP, draw.Src)
+				//	dst := t.Win.Buffer().RGBA()
+				//	src := crimson
+				//	draw.Draw(dst, image.Rect(0, 0, 8, 8).Add(t.Win.Bounds().Min), src, image.ZP, draw.Src)
 			}
 			t.Body.Upload()
 			wg.Done()

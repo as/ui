@@ -48,6 +48,10 @@ func (t *Tag) Resize(pt image.Point) {
 		pt.Y = ts
 		t.size = pt
 		t.Win.Resize(pt)
+
+		// Coherence: window always under tag
+		t.align()
+
 		pt.Y = 0
 		t.Body.Resize(pt)
 		t.Vis = VisTag
@@ -55,8 +59,16 @@ func (t *Tag) Resize(pt image.Point) {
 	}
 	t.size = pt
 	t.Win.Resize(image.Pt(pt.X, ts))
+	t.align()
 	t.Body.Resize(image.Pt(pt.X, pt.Y-ts))
 	t.Vis = VisFull
+}
+
+func (t *Tag) align() {
+	// Coherence: window always under tag
+	r := t.Win.Loc()
+	r.Min.Y = r.Max.Y
+	t.Body.Move(r.Min)
 }
 
 func (t *Tag) Loc() image.Rectangle {
