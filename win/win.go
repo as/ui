@@ -9,6 +9,7 @@ import (
 	"github.com/as/shiny/screen"
 	"github.com/as/text"
 	"github.com/as/ui"
+	"github.com/as/ui/scroll"
 )
 
 type Facer func(int) font.Face
@@ -51,7 +52,7 @@ type Win struct {
 	text.Editor
 	dirty bool
 
-	ScrollBar
+	sb scroll.Bar
 	Sq int64
 
 	inverted int
