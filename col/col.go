@@ -1,7 +1,6 @@
 package col
 
 import (
-	"fmt"
 	"image"
 
 	"github.com/as/font"
@@ -36,15 +35,14 @@ func New(dev ui.Dev, conf *tag.Config) *Col {
 }
 
 func (co *Col) Resize(size image.Point) {
-	co.size = size
-	notesize(co.Tag)
-	pt := image.Pt(co.size.X, co.tdy)
-	co.Tag.Resize(pt)
-	Fill(co)
-	for _, k := range co.List {
-		notesize(k)
-		k.Refresh()
+	if size.X < 0 || size.Y < 0{
+		println("resize for col called with a negative")
+		panic(size.String())
 	}
+	co.size = size
+	size.Y = co.tdy
+	co.Tag.Resize(size)
+	Fill(co)
 }
 
 func (co *Col) RollDown(id int, dy int) {
@@ -71,7 +69,6 @@ func (co *Col) Grow(id int, dy int) {
 	if dy := ra.Dy() - co.tdy; dy < 0 {
 		co.Grow(a, -dy)
 	}
-	fmt.Printf("min: %d, dy: %d, min-dy: %d\n", rb.Min.Y, dy, rb.Min.Y-dy)
 	co.MoveWin(b, rb.Min.Y-dy)
 }
 
