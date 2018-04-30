@@ -28,7 +28,7 @@ func NewTable2(dev ui.Dev, conf *tag.Config) Table2 {
 		ft:     conf.Facer(conf.FaceHeight),
 		tdy:    conf.TagHeight(),
 		Table:  Table{Tag: T},
-		Config: T.Config,
+		Config: &T.Config,
 	}
 }
 

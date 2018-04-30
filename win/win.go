@@ -21,7 +21,7 @@ var (
 var DefaultConfig = Config{
 	Facer:  font.NewFace,
 	Margin: image.Pt(13, 3),
-	Frame: &frame.Config{
+	Frame: frame.Config{
 		Face: font.NewFace(11),
 	},
 	Scrollbar: true,
@@ -31,7 +31,7 @@ type Config struct {
 	Name string
 	Facer
 	Margin image.Point
-	Frame  *frame.Config
+	Frame  frame.Config
 	Editor text.Editor
 
 	// Scrollbar enables and draws a shadow in the left margin of the window
@@ -135,7 +135,7 @@ func (w *Win) Resize(size image.Point) {
 		return
 	}
 	w.dirty = true
-	w.Frame = frame.New(w.b.RGBA(), w.area(), w.Config.Frame)
+	w.Frame = frame.New(w.b.RGBA(), w.area(), &w.Config.Frame)
 	w.init()
 	w.scrollinit(w.margin)
 	w.Refresh()

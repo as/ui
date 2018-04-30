@@ -25,7 +25,11 @@ func (t *Tag) dirfmt(p []byte) []byte {
 	if win.Graphical() {
 		dx = win.Face.Dx([]byte{'e'}) // common lowercase rune
 		maxx = win.Frame.Bounds().Dx()
-		win.Frame.SetFlags(win.Frame.Flags() | frame.FrElastic)
+		fl := win.Frame.Flags() | frame.FrElastic
+		t.Config.Body.Frame.Flag = fl
+		// TODO(as): Create a config loader
+		win.Config.Frame.Flag = fl
+		win.Frame.SetFlags(fl)
 	}
 	w := new(bytes.Buffer)
 	for _, nm := range bytes.Split(p, []byte{'\t'}) {
