@@ -43,7 +43,6 @@ type Tag struct {
 
 	basedir string
 	dirty   bool
-	r0, r1  int64
 
 	ctl    chan<- interface{}
 	Config Config
