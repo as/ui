@@ -69,6 +69,7 @@ func TestNewDirty(t *testing.T) {
 func TestCreateZero(t *testing.T) {
 	tt := New(etch, nil)
 	if tt == nil {
+		t.Fatalf("tag is nil")
 	}
 	if tt.Loc() != image.ZR {
 		t.Fatalf("pure zero tag has non zero location: %s", tt.Loc())
