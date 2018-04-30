@@ -33,7 +33,7 @@ func TestNew(t *testing.T) {
 	{
 		tt.Win.Insert([]byte("hello"), 0)
 		tt.Body.Insert([]byte("world"), 0)
-		tt.Upload(etch.Window())
+		tt.Upload()
 	}
 	img0 := etch.Screenshot(r)
 
@@ -48,7 +48,7 @@ func TestNew(t *testing.T) {
 		tt.Win.Insert([]byte("hello"), 0)
 		tt.Body.Insert([]byte("world"), 0)
 		tt.Resize(r.Size())
-		tt.Upload(etch.Window())
+		tt.Upload()
 	}
 	img1 := etch.Screenshot(r)
 	t.Skip("the scrollbar colors dont match; thats fine for now")
@@ -196,7 +196,7 @@ func TestResizeZero(t *testing.T) {
 	etch.Blank()
 	tt.Resize(image.Pt(500, 500))
 	etch.WritePNG("TestResizeZero.png")
-	tt.Upload(etch.Window())
+	tt.Upload()
 }
 
 func TestLocation(t *testing.T) {
