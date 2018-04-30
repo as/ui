@@ -14,8 +14,8 @@ type Config struct {
 	FaceHeight int
 	Margin     image.Point
 	Color      [3]frame.Color
-	Tag        *win.Config
-	Body       *win.Config
+	Tag        win.Config
+	Body       win.Config
 	Ctl        chan interface{}
 	Filesystem fs.Fs
 	Image      bool // Image makes win.Win ->img.Img instead
@@ -46,7 +46,7 @@ func (c *Config) TagConfig() *win.Config {
 		Ctl:    c.Ctl,
 		Facer:  c.Facer,
 		Margin: c.Margin,
-		Frame: &frame.Config{
+		Frame: frame.Config{
 			Color: c.Color[0],
 			Face:  c.Facer(c.FaceHeight),
 		},
@@ -58,9 +58,10 @@ func (c *Config) WinConfig() *win.Config {
 		Facer:     c.Facer,
 		Margin:    c.Margin,
 		Scrollbar: true,
-		Frame: &frame.Config{
+		Frame: frame.Config{
 			Color: c.Color[1],
 			Face:  c.Facer(c.FaceHeight),
+			Flag:  c.Body.Frame.Flag,
 		},
 	}
 }

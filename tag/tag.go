@@ -16,7 +16,6 @@ import (
 	"github.com/as/ui/win"
 	//"github.com/as/worm"
 	"github.com/as/shiny/screen"
-	"golang.org/x/mobile/event/mouse"
 )
 
 var (
@@ -46,10 +45,9 @@ type Tag struct {
 	basedir string
 	dirty   bool
 	r0, r1  int64
-	escR    image.Rectangle
 
 	ctl    chan<- interface{}
-	Config *Config
+	Config Config
 }
 
 func New(dev ui.Dev, conf *Config) *Tag {
@@ -61,7 +59,7 @@ func New(dev ui.Dev, conf *Config) *Tag {
 		Win:     win.New(dev, conf.TagConfig()),
 		Body:    win.New(dev, conf.WinConfig()),
 		ctl:     conf.Ctl,
-		Config:  conf,
+		Config:  *conf,
 	}
 	return t
 }
@@ -137,10 +135,4 @@ func mustCompile(prog string) *edit.Command {
 		return nil
 	}
 	return p
-}
-func p(e mouse.Event) image.Point {
-	return image.Pt(int(e.X), int(e.Y))
-}
-func pt(e mouse.Event) image.Point {
-	return image.Pt(int(e.X), int(e.Y))
 }
