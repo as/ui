@@ -64,7 +64,7 @@ func TestMoveNoSizeChange(t *testing.T) {
 
 	sr := image.Rect(0, 0, 1000, 1000)
 	etch.Blank()
-	c.Upload(etch.Window())
+	c.Upload()
 	img0 := etch.Screenshot(sr)
 
 	size0 := c.Loc().Size()
@@ -76,7 +76,7 @@ func TestMoveNoSizeChange(t *testing.T) {
 		t.Fatalf("size changed across calls to move: %s -move-> %s", size0, size1)
 	}
 
-	c.Upload(etch.Window())
+	c.Upload()
 	img1 := etch.Screenshot(sr)
 	etcher.Assertf(t, img0, img1, "TestMoveNoSizeChange.png", "column size changed after move")
 }
@@ -105,14 +105,14 @@ func TestAttachCoherence(t *testing.T) {
 	tt2.Body.Insert([]byte("Fox"), 0)
 	c.Move(image.Pt(500, 1))
 	c.Refresh()
-	c.Upload(etch.Window())
+	c.Upload()
 	c.Move(image.Pt(700, 10))
 	c.Resize(c.Loc().Size().Add(image.Pt(100, 0)))
 	if c.Loc().Size().Y != r.Size().Y {
 		t.Fatalf("attach extended y-axis: %d -> %d", r.Size().Y, c.Loc().Size().Y)
 	}
 	c.Refresh()
-	c.Upload(etch.Window())
+	c.Upload()
 }
 
 func TestAttach(t *testing.T) {
@@ -131,11 +131,11 @@ func TestAttach(t *testing.T) {
 	tt2.Body.Insert([]byte("Fox"), 0)
 	c.Move(image.Pt(500, 1))
 	c.Refresh()
-	c.Upload(etch.Window())
+	c.Upload()
 	c.Move(image.Pt(700, 10))
 	c.Resize(c.Loc().Size().Add(image.Pt(100, 0)))
 	c.Refresh()
-	c.Upload(etch.Window())
+	c.Upload()
 	etch.WritePNG("TestAttach.png")
 }
 
@@ -152,13 +152,13 @@ func TestNew(t *testing.T) {
 	{
 		sr := image.Rect(0, 0, 1000, 1000)
 		etch.Blank()
-		c.Upload(etch.Window())
+		c.Upload()
 		img0 := etch.Screenshot(sr)
 
 		etch.Blank()
 		c.Move(image.Pt(555, 555))
 		c.Move(image.Pt(55, 55))
-		c.Upload(etch.Window())
+		c.Upload()
 		img1 := etch.Screenshot(sr)
 
 		etcher.Assertf(t, img0, img1, "TestNewMove.png", "column state differs after move")
@@ -170,7 +170,7 @@ func TestNew(t *testing.T) {
 
 	etch.Blank()
 	{
-		c.Upload(etch.Window())
+		c.Upload()
 	}
 	img1 := etch.Screenshot(r)
 	//	t.Skip("the scrollbar colors dont match; thats fine for now")
