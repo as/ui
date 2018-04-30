@@ -11,16 +11,6 @@ const (
 	VisFull Vis = VisTag | VisBody
 )
 
-func Height(faceHeight int) int {
-	if faceHeight == 0 {
-		faceHeight = DefaultConfig.FaceHeight
-	}
-	if faceHeight != 11 {
-		panic(faceHeight)
-	}
-	return faceHeight * 2
-}
-
 func (t *Tag) Move(pt image.Point) {
 	t.sp = pt
 	t.Win.Move(pt)
