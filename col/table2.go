@@ -2,6 +2,7 @@ package col
 
 import (
 	"image"
+	"sync"
 
 	"github.com/as/font"
 	"github.com/as/ui"
@@ -20,15 +21,13 @@ type Table2 struct {
 }
 
 func NewTable2(dev ui.Dev, conf *tag.Config) Table2 {
-	T := tag.New(dev, conf)
-	T.Win.InsertString("New Delcol Sort	|", 0)
-
+	t := tag.New(dev, conf)
 	return Table2{
 		dev:    dev,
 		ft:     conf.Facer(conf.FaceHeight),
 		tdy:    conf.TagHeight(),
-		Table:  Table{Tag: T},
-		Config: &T.Config,
+		Table:  Table{Tag: t},
+		Config: &t.Config,
 	}
 }
 
@@ -46,6 +45,25 @@ func (co *Table2) Move(sp image.Point) {
 		t.Move(t.Loc().Min.Add(delta))
 	}
 	co.sp = sp
+}
+
+func (co *Table2) Upload() {
+	type Uploader interface {
+		Upload()
+	}
+	var wg sync.WaitGroup
+	wg.Add(len(co.List))
+	for _, w := range co.List {
+		w, _ := w.(Uploader)
+		go func() {
+			defer wg.Done()
+			if w != nil {
+				w.Upload()
+			}
+		}()
+	}
+	co.Tag.Upload()
+	wg.Wait()
 }
 
 func (c *Table2) Dev() ui.Dev                { return c.dev }

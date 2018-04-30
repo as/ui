@@ -5,7 +5,6 @@ import (
 	"image"
 	"io"
 
-	"github.com/as/shiny/screen"
 	"github.com/as/ui/tag"
 	"github.com/as/ui/win"
 )
@@ -77,15 +76,15 @@ func (t *Table) Refresh() {
 	}
 }
 
-func (t *Table) Upload(wind screen.Window) {
+func (t *Table) Upload() {
 	type Uploader interface {
-		Upload(screen.Window)
+		Upload()
 		Dirty() bool
 	}
-	t.Tag.Upload(wind)
+	t.Tag.Upload()
 	for _, t := range t.List {
 		if t, ok := t.(Uploader); ok {
-			t.Upload(wind)
+			t.Upload()
 		}
 	}
 }

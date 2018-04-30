@@ -249,7 +249,6 @@ func (w *Win) Refresh() {
 	w.Frame.Refresh()
 	w.UserFunc(w)
 	w.dirty = true
-	w.Upload()
 }
 
 func (w Win) minbounds() image.Rectangle {

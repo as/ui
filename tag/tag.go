@@ -15,7 +15,6 @@ import (
 	//	"github.com/as/ui/img"
 	"github.com/as/ui/win"
 	//"github.com/as/worm"
-	"github.com/as/shiny/screen"
 )
 
 var (
@@ -85,7 +84,7 @@ func (t *Tag) Mark() {
 
 //var crimson = image.NewUniform(color.RGBA{70, 40, 56, 255})
 
-func (t *Tag) Upload(wind screen.Window) {
+func (t *Tag) Upload() {
 	var wg sync.WaitGroup
 	defer wg.Wait()
 	if t.Body != nil && t.Body.Dirty() {
