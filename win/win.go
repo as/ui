@@ -74,6 +74,7 @@ func (w *Win) Ctl() chan interface{} {
 	return w.ctl
 }
 
+
 func New(dev ui.Dev, conf *Config) *Win {
 	if conf == nil {
 		c := DefaultConfig
@@ -118,6 +119,13 @@ func (w *Win) reallocimage(size image.Point) bool {
 	return true
 }
 
+func (w *Win) Area() image.Rectangle{
+	return w.Loc().Add(w.margin)
+}
+func (w *Win) area() image.Rectangle{
+	return image.Rectangle{w.margin, w.size}
+}
+
 func (w *Win) Resize(size image.Point) {
 	w.size = size
 	if !w.reallocimage(w.size) {
@@ -128,8 +136,7 @@ func (w *Win) Resize(size image.Point) {
 		return
 	}
 	w.dirty = true
-	r := image.Rectangle{w.margin, w.size}
-	w.Frame = frame.New(w.b.RGBA(), r, w.Config.Frame)
+	w.Frame = frame.New(w.b.RGBA(), w.area(), w.Config.Frame)
 	w.init()
 	w.scrollinit(w.margin)
 	w.Refresh()

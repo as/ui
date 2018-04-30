@@ -78,7 +78,7 @@ func (w *Win) scrollinit(pad image.Point) {
 }
 
 func (w *Win) updatesb() {
-	if !w.Config.Scrollbar {
+	if !w.Config.Scrollbar || w.Len() == 0{
 		return
 	}
 	rat0 := float64(w.org) / float64(w.Len())
@@ -86,9 +86,15 @@ func (w *Win) updatesb() {
 	w.dirty = w.sb.Put(rat0, rat1) || w.dirty
 }
 func (w *Win) drawsb() {
+	if  !w.Graphical() {
+		return
+	}
 	w.dirty = w.sb.Update(w.Frame.RGBA(), w.Frame) || w.dirty
 }
 func (w *Win) refreshsb() {
+	if  !w.Graphical(){
+		return
+	}
 	w.sb.Refresh(w.Frame.RGBA(), w.Frame)
 	w.dirty = true
 }
