@@ -43,6 +43,25 @@ func (w *Win) Scroll(dl int) {
 	w.dirty = true
 }
 
+func (w *Win) backNL(p int64, n int) int64 {
+	if n == 0 && p > 0 && w.Bytes()[p-1] != '\n' {
+		n = 1
+	}
+	for i := n; i > 0 && p > 0; {
+		i--
+		p--
+		if p == 0 {
+			break
+		}
+		for j := 512; j-1 > 0 && p > 0; p-- {
+			j--
+			if p-1 < 0 || p-1 > w.Len() || w.Bytes()[p-1] == '\n' {
+				break
+			}
+		}
+	}
+	return p
+}
 func (w *Win) Clicksb(pt image.Point, dir int) {
 	w.clicksb(pt, dir)
 	w.drawsb()
@@ -78,7 +97,7 @@ func (w *Win) scrollinit(pad image.Point) {
 }
 
 func (w *Win) updatesb() {
-	if !w.Config.Scrollbar || w.Len() == 0{
+	if !w.Config.Scrollbar || w.Len() == 0 {
 		return
 	}
 	rat0 := float64(w.org) / float64(w.Len())
@@ -86,13 +105,13 @@ func (w *Win) updatesb() {
 	w.dirty = w.sb.Put(rat0, rat1) || w.dirty
 }
 func (w *Win) drawsb() {
-	if  !w.Graphical() {
+	if !w.Graphical() {
 		return
 	}
 	w.dirty = w.sb.Update(w.Frame.RGBA(), w.Frame) || w.dirty
 }
 func (w *Win) refreshsb() {
-	if  !w.Graphical(){
+	if !w.Graphical() {
 		return
 	}
 	w.sb.Refresh(w.Frame.RGBA(), w.Frame)

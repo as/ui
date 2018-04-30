@@ -74,7 +74,6 @@ func (w *Win) Ctl() chan interface{} {
 	return w.ctl
 }
 
-
 func New(dev ui.Dev, conf *Config) *Win {
 	if conf == nil {
 		c := DefaultConfig
@@ -119,10 +118,10 @@ func (w *Win) reallocimage(size image.Point) bool {
 	return true
 }
 
-func (w *Win) Area() image.Rectangle{
+func (w *Win) Area() image.Rectangle {
 	return w.Loc().Add(w.margin)
 }
-func (w *Win) area() image.Rectangle{
+func (w *Win) area() image.Rectangle {
 	return image.Rectangle{w.margin, w.size}
 }
 
@@ -239,25 +238,6 @@ func (w *Win) Swap() bool {
 	return w.inverted%2 == 0
 }
 
-func (w *Win) backNL(p int64, n int) int64 {
-	if n == 0 && p > 0 && w.Bytes()[p-1] != '\n' {
-		n = 1
-	}
-	for i := n; i > 0 && p > 0; {
-		i--
-		p--
-		if p == 0 {
-			break
-		}
-		for j := 512; j-1 > 0 && p > 0; p-- {
-			j--
-			if p-1 < 0 || p-1 > w.Len() || w.Bytes()[p-1] == '\n' {
-				break
-			}
-		}
-	}
-	return p
-}
 func (w *Win) Len() int64 {
 	return w.Editor.Len()
 }
