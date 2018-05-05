@@ -35,7 +35,7 @@ func New(dev ui.Dev, conf *tag.Config) *Col {
 }
 
 func (co *Col) Resize(size image.Point) {
-	if size.X < 0 || size.Y < 0{
+	if size.X < 0 || size.Y < 0 {
 		println("resize for col called with a negative")
 		panic(size.String())
 	}

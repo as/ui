@@ -26,6 +26,17 @@ type Drawer interface {
 	Draw(dst draw.Image, r image.Rectangle, src image.Image, sp image.Point, op draw.Op)
 }
 
+type Config struct {
+	// Enable is a hint that can be set by other packages holding
+	// the config. The New function ignores the value of this
+	// variable
+	Enable bool
+
+	// Color is a two-element array of images used for the scrollbars
+	// foreground and background.
+	Color [2]image.Image
+}
+
 // Bar is a scrollbar, currently vertical only
 type Bar struct {
 	r       image.Rectangle
@@ -37,14 +48,14 @@ type Bar struct {
 // New initializes using r as the bounds using fg and bg as the
 // foreground and background colors. Default colors are used
 // if fg or bg are nil.
-func New(r image.Rectangle, fg, bg image.Image) (b Bar) {
+func New(r image.Rectangle, conf Config) (b Bar) {
 	b.r = r
-	b.fg = fg
-	b.bg = bg
-	if fg == nil {
+	b.fg = conf.Color[0]
+	b.bg = conf.Color[1]
+	if b.fg == nil {
 		b.fg = DefaultColors[0]
 	}
-	if bg == nil {
+	if b.bg == nil {
 		b.bg = DefaultColors[1]
 	}
 	return b

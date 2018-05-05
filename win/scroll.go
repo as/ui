@@ -9,7 +9,7 @@ import (
 const minSbWidth = 10
 
 func (w *Win) Scroll(dl int) {
-	if !w.Config.Scrollbar {
+	if !w.Config.Scroll.Enable {
 		return
 	}
 	org := w.org
@@ -91,13 +91,13 @@ func (w *Win) scrollinit(pad image.Point) {
 	if pad.X > minSbWidth+2 {
 		sr.Max.X = minSbWidth
 	}
-	w.sb = scroll.New(sr, nil, nil)
+	w.sb = scroll.New(sr, w.Config.Scroll)
 	w.updatesb()
 	w.refreshsb()
 }
 
 func (w *Win) updatesb() {
-	if !w.Config.Scrollbar || w.Len() == 0 {
+	if !w.Config.Scroll.Enable || w.Len() == 0 {
 		return
 	}
 	rat0 := float64(w.org) / float64(w.Len())

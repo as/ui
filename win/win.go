@@ -24,7 +24,9 @@ var DefaultConfig = Config{
 	Frame: frame.Config{
 		Face: font.NewFace(11),
 	},
-	Scrollbar: true,
+	Scroll: scroll.Config{
+		Enable: true,
+	},
 }
 
 type Config struct {
@@ -32,13 +34,15 @@ type Config struct {
 	Facer
 	Margin image.Point
 	Frame  frame.Config
+
 	Editor text.Editor
 
-	// Scrollbar enables and draws a shadow in the left margin of the window
-	Scrollbar bool
+	// Scroll configures the scrollbar.
+	// Scroll.Enable must be true for the forground to be rendered.
+	Scroll scroll.Config
 
 	// Ctl is a channel provided by the window owner. It carries window messages
-	// back to the creator. Valid types are event.Look and event.Cmd
+	// back to the creator.
 	Ctl chan interface{}
 }
 

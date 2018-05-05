@@ -6,6 +6,7 @@ import (
 	"github.com/as/font"
 	"github.com/as/frame"
 	"github.com/as/srv/fs"
+	"github.com/as/ui/scroll"
 	"github.com/as/ui/win"
 )
 
@@ -46,6 +47,13 @@ func (c *Config) TagConfig() *win.Config {
 		Ctl:    c.Ctl,
 		Facer:  c.Facer,
 		Margin: c.Margin,
+		Scroll: scroll.Config{
+			Enable: false,
+			Color: [2]image.Image{
+				c.Color[2].Text,
+				c.Color[2].Back,
+			},
+		},
 		Frame: frame.Config{
 			Color: c.Color[0],
 			Face:  c.Facer(c.FaceHeight),
@@ -54,10 +62,16 @@ func (c *Config) TagConfig() *win.Config {
 }
 func (c *Config) WinConfig() *win.Config {
 	return &win.Config{
-		Ctl:       c.Ctl,
-		Facer:     c.Facer,
-		Margin:    c.Margin,
-		Scrollbar: true,
+		Ctl:    c.Ctl,
+		Facer:  c.Facer,
+		Margin: c.Margin,
+		Scroll: scroll.Config{
+			Enable: true,
+			Color: [2]image.Image{
+				c.Color[2].Text,
+				c.Color[2].Back,
+			},
+		},
 		Frame: frame.Config{
 			Color: c.Color[1],
 			Face:  c.Facer(c.FaceHeight),
