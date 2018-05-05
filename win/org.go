@@ -1,5 +1,10 @@
 package win
 
+import (
+	"image/png"
+	"os"
+)
+
 func (w *Win) SetOrigin(org int64, exact bool) {
 	org = clamp(org, 0, w.Len())
 	if org == w.org {
