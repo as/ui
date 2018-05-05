@@ -12,6 +12,9 @@ func (w *Win) Delete(q0, q1 int64) (n int) {
 		q0, q1 = q1, q0
 	}
 	w.Editor.Delete(q0, q1)
+	if !w.graphical() {
+		return int(q1 - q0)
+	}
 
 	switch text.Region5(q0, q1, w.org-1, w.org+w.Frame.Len()+1) {
 	case -2:

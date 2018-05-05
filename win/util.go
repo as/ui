@@ -2,8 +2,6 @@ package win
 
 import (
 	"fmt"
-	"image"
-	"image/color"
 )
 
 var Db = new(Dbg)
@@ -65,7 +63,7 @@ func clamp(v, l, h int64) int64 {
 }
 
 // Put
-
+/*
 var (
 	Red    = image.NewUniform(color.RGBA{255, 0, 0, 255})
 	Green  = image.NewUniform(color.RGBA{255, 255, 192, 25})
@@ -78,3 +76,4 @@ var (
 	Gray   = image.NewUniform(color.RGBA{66, 66, 66, 255})
 	Mauve  = image.NewUniform(color.RGBA{0x99, 0x99, 0xDD, 255})
 )
+*/

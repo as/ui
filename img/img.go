@@ -1,13 +1,14 @@
 package img
 
 import (
+	"bytes"
 	"image"
 	"image/draw"
+	_ "image/png"
 
 	"github.com/as/shiny/screen"
 	"github.com/as/text"
 	"github.com/as/ui"
-	"golang.org/x/mobile/event/mouse"
 )
 
 type Node struct {
@@ -16,15 +17,25 @@ type Node struct {
 }
 
 func (n Node) Size() image.Point {
-	return n.Size()
+	return n.size
 }
 func (n Node) Pad() image.Point {
-	return n.Sp.Add(n.Size())
+	return n.Sp.Add(n.pad)
+}
+
+type Config struct {
+	Name   string
+	Margin image.Point
+	Editor text.Editor
+
+	// Ctl is a channel provided by the window owner. It carries window messages
+	// back to the creator. Valid types are event.Look and event.Cmd
+	Ctl chan interface{}
 }
 
 type Img struct {
 	Node
-	*ui.Dev
+	ui.Dev
 	img image.Image
 	b   screen.Buffer
 	ScrollBar
@@ -33,16 +44,20 @@ type Img struct {
 }
 
 type ScrollBar struct {
-	bar     image.Rectangle
 	Scrollr image.Rectangle
 }
 
-func New(dev *ui.Dev, sp, size, pad image.Point, img image.Image) *Img {
+func New(dev ui.Dev, sp, size image.Point, conf *Config) *Img {
 	ed, _ := text.Open(text.NewBuffer())
-	b := dev.NewBuffer(size)
+	b, _ := dev.NewBuffer(size)
+	var img image.Image
+	if ed.Len() != 0 {
+		img, _, _ = image.Decode(bytes.NewReader(ed.Bytes()))
+	}
+
 	w := &Img{
 		img:    img,
-		Node:   Node{Sp: sp, size: size, pad: pad},
+		Node:   Node{Sp: sp, size: size, pad: conf.Margin},
 		Dev:    dev,
 		b:      b,
 		Editor: ed,
@@ -81,18 +96,7 @@ func (w *Img) Dirty() bool             { return w.dirty }
 func (w *Img) Len() int64              { return w.Editor.Len() }
 func (w Img) Loc() image.Rectangle     { return image.Rectangle{w.Sp, w.Sp.Add(w.size)} }
 func (w *Img) Move(sp image.Point)     { w.Sp = sp }
-func (w *Img) NextEvent() (e interface{}) {
-	switch e := w.Window().NextEvent().(type) {
-	case mouse.Event:
-		e.X -= float32(w.Sp.X)
-		e.Y -= float32(w.Sp.Y)
-		return e
-	case interface{}:
-		return e
-	}
-	return nil
-}
-func (w *Img) Origin() int64 { return w.org }
+func (w *Img) Origin() int64           { return w.org }
 func (w *Img) Refresh() {
 	w.Upload()
 	w.Window().Upload(w.Sp, w.b, w.b.Bounds())
@@ -108,14 +112,11 @@ func (w *Img) Upload() {
 	w.Window().Upload(r.Min, w.b, r)
 	w.dirty = false
 }
-func (w *Img) Send(e interface{}) {
-	w.Window().Send(e)
-}
-func (w *Img) SendFirst(e interface{}) {
-	w.Window().SendFirst(e)
-}
 func (w *Img) Resize(size image.Point) {
-	b := w.NewBuffer(size)
+	if size.Y < 100 {
+		size.Y = 100
+	}
+	b, _ := w.NewBuffer(size)
 	w.size = size
 	w.b.Release()
 	w.b = b

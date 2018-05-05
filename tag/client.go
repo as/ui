@@ -2,10 +2,11 @@ package tag
 
 import (
 	"fmt"
-	"github.com/as/frame"
-	"github.com/as/text"
 	"io"
 	"io/ioutil"
+
+	"github.com/as/frame"
+	"github.com/as/text"
 )
 
 // Open returns an Editor capable of managing a selection

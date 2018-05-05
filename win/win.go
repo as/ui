@@ -1,101 +1,152 @@
 package win
 
 import (
+	"image"
+	"image/draw"
+
 	"github.com/as/font"
 	"github.com/as/frame"
 	"github.com/as/shiny/screen"
 	"github.com/as/text"
 	"github.com/as/ui"
-	"golang.org/x/mobile/event/mouse"
-	"image"
-	"image/draw"
+	"github.com/as/ui/scroll"
 )
 
-func (w *Win) Dirty() bool {
-	return w.dirty || (w.Frame != nil && w.Frame.Dirty())
-}
+type Facer func(int) font.Face //TODO(as): belongs in github.com/as/font
 
-type Node struct {
-	Sp, size, pad image.Point
-	dirty         bool
-}
+var (
+	MinRect = image.Rect(0, 0, 10, 10)
+)
 
-func (n Node) Size() image.Point {
-	return n.size
+var DefaultConfig = Config{
+	Facer:  font.NewFace,
+	Margin: image.Pt(13, 3),
+	Frame: frame.Config{
+		Face: font.NewFace(11),
+	},
+	Scroll: scroll.Config{
+		Enable: true,
+	},
 }
-func (n Node) Pad() image.Point {
-	return n.Sp.Add(n.Size())
-}
-
-type Facer func(int) font.Face
 
 type Config struct {
 	Name string
 	Facer
 	Margin image.Point
-	Frame  *frame.Config
+	Frame  frame.Config
+
 	Editor text.Editor
+
+	// Scroll configures the scrollbar.
+	// Scroll.Enable must be true for the forground to be rendered.
+	Scroll scroll.Config
+
+	// Ctl is a channel provided by the window owner. It carries window messages
+	// back to the creator.
+	Ctl chan interface{}
 }
 
 type Win struct {
 	*frame.Frame
+	ui.Dev
+	ctl chan interface{}
+
+	b                screen.Buffer
+	sp, size, margin image.Point
+
+	org int64
 	text.Editor
-	Node
-	*ui.Dev
-	b screen.Buffer
-	ScrollBar
-	org      int64
-	Sq       int64
+	dirty bool
+
+	sb scroll.Bar
+	Sq int64
+
 	inverted int
-
-	donec chan bool
-
 	UserFunc func(*Win)
+	Config   *Config
 }
 
-func (n *Win) Bounds() image.Rectangle {
-	return image.Rectangle{n.Sp, n.Size()}
+func (w *Win) Graphical() bool {
+	return w.graphical()
 }
 
-func (w *Win) Origin() int64 {
-	return w.org
+func (w *Win) graphical() bool {
+	return w != nil && w.Frame != nil && w.Dev != nil && w.b != nil && !w.Size().In(MinRect) && w.Size() != image.ZP
 }
 
-func New(dev *ui.Dev, sp, size image.Point, conf *Config) *Win {
+func (w *Win) Ctl() chan interface{} {
+	return w.ctl
+}
+
+func New(dev ui.Dev, conf *Config) *Win {
 	if conf == nil {
-		conf = &Config{
-			Facer:  font.NewFace,
-			Margin: image.Pt(15, 15),
-			Frame: &frame.Config{
-				Face: font.NewFace(11),
-			},
-		}
+		c := DefaultConfig
+		conf = &c
 	}
 	ed := conf.Editor
 	if ed == nil {
 		ed, _ = text.Open(text.NewBuffer())
 	}
-	b := dev.NewBuffer(size)
-	r := image.Rectangle{conf.Margin, size}
 	w := &Win{
-		Frame:    frame.New(b.RGBA(), r, conf.Frame),
-		Node:     Node{Sp: sp, size: size, pad: conf.Margin},
 		Dev:      dev,
-		b:        b,
+		ctl:      conf.Ctl,
+		margin:   conf.Margin,
 		Editor:   ed,
 		UserFunc: func(w *Win) {},
+		Config:   conf,
 	}
-	w.init()
-	w.scrollinit(conf.Margin)
-
 	return w
 }
 
-func (w *Win) FuncInstall(fn func(*Win)) {
-	if fn == nil {
-		fn = func(w *Win) {}
+func small(size image.Point) bool {
+	return size.X == 0 || size.Y == 0 || size.In(MinRect)
+}
+
+// reallocimage releases the current image and replaces it with a fresh
+// image of the given size. It returns false if the new size prevents the
+// window from rendering graphics, meaning subsequent calls to
+// w.Graphical returns false until a suitable image is allocated in its place
+func (w *Win) reallocimage(size image.Point) bool {
+	if w.b != nil {
+		w.b.Release()
+		w.b = nil
 	}
-	w.UserFunc = fn
+	if small(size) {
+		return false
+	}
+	b, err := w.NewBuffer(size)
+	if err != nil {
+		panic(size.String())
+	}
+	w.b = b
+	return true
+}
+
+func (w *Win) Area() image.Rectangle {
+	return w.Loc().Add(w.margin)
+}
+func (w *Win) area() image.Rectangle {
+	return image.Rectangle{w.margin, w.size}
+}
+
+func (w *Win) Resize(size image.Point) {
+	w.size = size
+	if !w.reallocimage(w.size) {
+		if w == nil {
+			return
+		}
+		w.Frame = nil
+		return
+	}
+	w.dirty = true
+	w.Frame = frame.New(w.b.RGBA(), w.area(), &w.Config.Frame)
+	w.init()
+	w.scrollinit(w.margin)
+	w.Refresh()
+}
+
+func (w *Win) Dirty() bool {
+	return w.dirty || (w.Frame != nil && w.Frame.Dirty())
 }
 
 func (w *Win) Buffer() screen.Buffer {
@@ -105,92 +156,78 @@ func (w *Win) Size() image.Point {
 	return w.size
 }
 
+func (w *Win) Bounds() image.Rectangle {
+	return image.Rectangle{w.sp, w.sp.Add(w.size)}
+}
+
+func (w Win) Loc() image.Rectangle {
+	return w.Bounds()
+}
+
+func (w *Win) Origin() int64 {
+	return w.org
+}
+
+func (w *Win) FuncInstall(fn func(*Win)) {
+	if fn == nil {
+		fn = func(w *Win) {}
+	}
+	w.UserFunc = fn
+}
+
 func (w *Win) init() {
-	w.Blank()
-	w.Fill()
+	if w.graphical() {
+		w.Blank()
+		w.Fill()
+	}
 	q0, q1 := w.Dot()
 	w.Select(q0, q1)
 	w.Mark()
 }
 
-func (w Win) Loc() image.Rectangle {
-	return image.Rectangle{w.Sp, w.Sp.Add(w.size)}
-}
-
 func (w *Win) Close() error {
 	if w.Frame != nil {
 		w.Frame.Close()
-		w.Frame = nil
 	}
 	if w.b != nil {
 		w.b.Release()
-		w.b = nil
 	}
 	if w.Editor != nil {
 		w.Editor.Close()
-		w.Editor = nil
-	}
-	if w.donec != nil {
-		close(w.donec)
-		w.donec = nil
 	}
 	return nil
 }
 
-func (w *Win) Resize(size image.Point) {
-	b := w.NewBuffer(size)
-	w.size = size
-	w.b.Release()
-	w.b = b
-	r := image.Rectangle{w.pad, w.size} //.Inset(1)
-	w.Frame = frame.New(w.b.RGBA(), r, &frame.Config{Face: w.Frame.Face, Color: w.Frame.Color, Flag: w.Frame.Flags()})
-	w.init()
-	w.scrollinit(w.pad)
-	w.Refresh()
-}
-
 func (w *Win) Move(sp image.Point) {
-	w.Sp = sp
+	w.sp = sp
 }
 
 func (w *Win) SetFont(ft font.Face) {
 	if ft.Height() < 4 {
 		return
 	}
-	r := image.Rectangle{w.pad, w.size}
-	w.Frame = frame.New(w.b.RGBA(), r, &frame.Config{Face: ft, Color: w.Frame.Color, Flag: w.Frame.Flags()})
+	w.Config.Frame.Face = ft
 	w.Resize(w.size)
 }
 
-func (w *Win) NextEvent() (e interface{}) {
-	switch e := w.Window().NextEvent().(type) {
-	case mouse.Event:
-		e.X -= float32(w.Sp.X)
-		e.Y -= float32(w.Sp.Y)
-		return e
-	case interface{}:
-		return e
-	}
-	return nil
+func (w *Win) Visible() bool {
+	return w.b != nil && w.Frame != nil && w.size != image.ZP
 }
-func (w *Win) Send(e interface{}) {
-	w.Window().Send(e)
-}
-func (w *Win) SendFirst(e interface{}) {
-	w.Window().SendFirst(e)
-}
+
 func (w *Win) Blank() {
-	if w.b == nil {
+	if !w.graphical() {
 		return
 	}
-	r := w.b.RGBA().Bounds()
-	draw.Draw(w.b.RGBA(), r, w.Color.Back, image.ZP, draw.Src)
-	if w.Sp.Y > 0 {
-		r.Min.Y--
-	}
+	r := w.minbounds()
+	draw.Draw(
+		w.b.RGBA(),
+		r,
+		w.Color.Back,
+		image.ZP,
+		draw.Src,
+	)
 	w.Mark()
 	w.drawsb()
-	//w.upload()
 }
 func (w *Win) Dot() (int64, int64) {
 	return w.Editor.Dot()
@@ -204,43 +241,28 @@ func (w *Win) Swap() bool {
 	return w.inverted%2 == 0
 }
 
-func (w *Win) BackNL(p int64, n int) int64 {
-	if n == 0 && p > 0 && w.Bytes()[p-1] != '\n' {
-		n = 1
-	}
-	for i := n; i > 0 && p > 0; {
-		i--
-		p--
-		if p == 0 {
-			break
-		}
-		for j := 512; j-1 > 0 && p > 0; p-- {
-			j--
-			if p-1 < 0 || p-1 > w.Len() || w.Bytes()[p-1] == '\n' {
-				break
-			}
-		}
-	}
-	return p
-}
 func (w *Win) Len() int64 {
 	return w.Editor.Len()
 }
 
 func (w *Win) Refresh() {
-	w.Frame.Refresh()
-	w.UserFunc(w)
-	w.Window().Upload(w.Sp, w.b, w.b.Bounds())
-	w.Flush()
-	w.dirty = false
-}
-
-// the old "Upload"
-func (w *Win) Upload() {
-	if !w.dirty {
+	if !w.graphical() {
 		return
 	}
-	w.Window().Upload(w.Sp, w.b, w.b.Bounds())
+	w.Frame.Refresh()
+	w.UserFunc(w)
+	w.dirty = true
+}
+
+func (w Win) minbounds() image.Rectangle {
+	return image.Rectangle{image.ZP, w.Bounds().Size()}.Union(w.b.Bounds())
+}
+
+func (w *Win) Upload() {
+	if !w.dirty || !w.graphical() {
+		return
+	}
+	w.Window().Upload(w.sp, w.b, w.minbounds())
 	w.Flush()
 	w.dirty = false
 }
@@ -250,6 +272,11 @@ func (w *Win) ReadAt(off int64, p []byte) (n int, err error) {
 		return
 	}
 	return copy(p, w.Bytes()[off:w.Len()]), err
+}
+
+func (w *Win) Readsel() []byte {
+	q0, q1 := w.Dot()
+	return w.Bytes()[q0:q1]
 }
 
 func (w *Win) Read(p []byte) (n int, err error) {

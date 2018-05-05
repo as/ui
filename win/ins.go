@@ -8,8 +8,15 @@ import (
 // is zero, Insert prepends the bytes in p to the underlying
 // buffer
 func (w *Win) Insert(p []byte, q0 int64) (n int) {
+	if w.Editor == nil {
+		panic("nil editor")
+	}
 	if len(p) == 0 {
 		return 0
+	}
+	n = w.Editor.Insert(p, q0)
+	if !w.graphical() {
+		return
 	}
 
 	// If at least one point in the region overlaps the
@@ -37,9 +44,5 @@ func (w *Win) Insert(p []byte, q0 int64) (n int) {
 		}
 		w.dirty = true
 	}
-	if w.Editor == nil {
-		panic("nil editor")
-	}
-	n = w.Editor.Insert(p, q0)
 	return n
 }
