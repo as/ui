@@ -206,8 +206,7 @@ func (w *Win) SetFont(ft font.Face) {
 	if ft.Height() < 4 {
 		return
 	}
-	r := image.Rectangle{w.margin, w.size}
-	w.Frame = frame.New(w.b.RGBA(), r, &frame.Config{Face: ft, Color: w.Frame.Color, Flag: w.Frame.Flags()})
+	w.Config.Frame.Face = ft
 	w.Resize(w.size)
 }
 
