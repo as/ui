@@ -22,13 +22,12 @@ func (t *Tag) dirfmt(p []byte) []byte {
 		return nil
 	}
 	x, dx, maxx := 0, 8, 600
+	win.Config.Frame.Flag |= frame.FrElastic
 	if win.Graphical() {
 		dx = win.Face.Dx([]byte{'e'}) // common lowercase rune
 		maxx = win.Frame.Bounds().Dx()
 		fl := win.Frame.Flags() | frame.FrElastic
 		t.Config.Body.Frame.Flag = fl
-		// TODO(as): Create a config loader
-		win.Config.Frame.Flag = fl
 		win.Frame.SetFlags(fl)
 	}
 	w := new(bytes.Buffer)
