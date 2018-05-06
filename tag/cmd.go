@@ -3,10 +3,8 @@ package tag
 import (
 	"bytes"
 	"errors"
-	"fmt"
 	"image"
 	"io"
-	"path/filepath"
 
 	"github.com/as/path"
 	"github.com/as/text"
@@ -45,18 +43,18 @@ func (t *Tag) Get(name string) {
 		t.fixtag("")
 		return
 	}
-	abs := ""
 	name, addr := action.SplitPath(name)
 	if IsAbs(name) && path.Exists(name) {
-		t.basedir = path.DirOf(name)
-		abs = name
-		t.fixtag(abs)
-		t.getbody(abs, addr)
+		t.fixtag(name)
+		t.getbody(name, addr)
 		return
 	}
-	abs = filepath.Join(t.basedir, name)
-	t.fixtag(abs)
-	t.getbody(abs, addr)
+	t.fixtag(name)
+	t.getbody(name, addr)
+}
+
+func (t *Tag) Put() (err error) {
+	return t.Fs.Put(t.FileName(), t.Body.Bytes())
 }
 
 func (t *Tag) getbody(abs, addr string) {
@@ -71,15 +69,6 @@ func (t *Tag) getbody(abs, addr string) {
 	}
 }
 
-func (t *Tag) Put() (err error) {
-	name := t.abs()
-	if name == "" {
-		return ErrNoFile
-	}
-	t.ctl <- fmt.Errorf("Put %q", name)
-	t.Fs.Put(name, t.Body.Bytes())
-	return nil
-}
 func Visible(w *win.Win, q0, q1 int64) bool {
 	if q0 < w.Origin() {
 		return false

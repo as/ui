@@ -3,8 +3,6 @@ package tag
 import (
 	"image"
 	"log"
-	"os"
-	"sync"
 
 	"github.com/as/srv/fs"
 	"github.com/as/ui"
@@ -41,8 +39,7 @@ type Tag struct {
 	Scrolling bool
 	fs.Fs
 
-	basedir string
-	dirty   bool
+	dirty bool
 
 	ctl    chan<- interface{}
 	Config Config
@@ -50,14 +47,12 @@ type Tag struct {
 
 func New(dev ui.Dev, conf *Config) *Tag {
 	conf = validConfig(conf)
-	wd, _ := os.Getwd() // TODO(as): BUG!!!
 	t := &Tag{
-		basedir: wd,
-		Fs:      conf.Filesystem,
-		Win:     win.New(dev, conf.TagConfig()),
-		Body:    win.New(dev, conf.WinConfig()),
-		ctl:     conf.Ctl,
-		Config:  *conf,
+		Fs:     conf.Filesystem,
+		Win:    win.New(dev, conf.TagConfig()),
+		Body:   win.New(dev, conf.WinConfig()),
+		ctl:    conf.Ctl,
+		Config: *conf,
 	}
 	return t
 }
@@ -84,46 +79,13 @@ func (t *Tag) Mark() {
 //var crimson = image.NewUniform(color.RGBA{70, 40, 56, 255})
 
 func (t *Tag) Upload() {
-	var wg sync.WaitGroup
-	defer wg.Wait()
-	if t.Body != nil && t.Body.Dirty() {
-		wg.Add(1)
-		go func() {
-			{
-				//	dst := t.Win.Buffer().RGBA()
-				//	src := crimson
-				//	draw.Draw(dst, image.Rect(0, 0, 8, 8).Add(t.Win.Bounds().Min), src, image.ZP, draw.Src)
-			}
-			t.Body.Upload()
-			wg.Done()
-		}()
-	}
-	if t.Win.Dirty() {
-		wg.Add(1)
-		go func() {
-			t.Win.Upload()
-			wg.Done()
-		}()
-	}
+	t.Body.Upload()
+	t.Win.Upload()
 }
 
 func (t *Tag) Refresh() {
-	var wg sync.WaitGroup
-	defer wg.Wait()
-	if t.Body != nil {
-		wg.Add(1)
-		go func() {
-			t.Body.Refresh()
-			wg.Done()
-		}()
-	}
-	if t.Win.Dirty() {
-		wg.Add(1)
-		go func() {
-			t.Win.Refresh()
-			wg.Done()
-		}()
-	}
+	t.Body.Refresh()
+	t.Win.Refresh()
 }
 
 func mustCompile(prog string) *edit.Command {

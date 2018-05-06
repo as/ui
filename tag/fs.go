@@ -3,10 +3,8 @@ package tag
 import (
 	"bufio"
 	"bytes"
-	"path/filepath"
 	"strings"
 
-	"github.com/as/path"
 	"github.com/as/text/find"
 )
 
@@ -22,25 +20,8 @@ func (t *Tag) FileName() string {
 }
 
 func (t *Tag) Open(basepath, title string) {
-	t.basedir = path.DirOf(basepath)
 	println(title)
 	t.Get(title)
-}
-
-func (t *Tag) Dir() string {
-	x := path.DirOf(t.FileName())
-	if IsAbs(x) {
-		return x
-	}
-	return filepath.Join(t.basedir, x)
-}
-
-func (t *Tag) abs() string {
-	name := t.FileName()
-	if !IsAbs(name) {
-		name = filepath.Join(t.basedir, name)
-	}
-	return name
 }
 
 func (t *Tag) fixtag(abs string) {

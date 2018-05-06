@@ -55,7 +55,6 @@ func (t *Tag) readfile(s string) (p []byte) {
 
 	p, err = t.Fs.Get(s)
 	if err != nil {
-		t.ctl <- err
 		return []byte{}
 	}
 	if dir {
