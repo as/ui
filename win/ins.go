@@ -46,3 +46,7 @@ func (w *Win) Insert(p []byte, q0 int64) (n int) {
 	}
 	return n
 }
+
+func (w *Win) Write(p []byte) (n int, err error) {
+	return w.Insert(p, w.Len()), nil
+}
