@@ -34,7 +34,7 @@ func (w *Win) Scroll(dl int) {
 		if mul == 0 {
 			mul++
 		}
-		dx := w.IndexOf(image.Pt(r.Min.X, r.Min.Y+dl*w.Face.Dy())) * mul
+		dx := w.IndexOf(image.Pt(r.Min.X, r.Min.Y+dl*w.Face().Dy())) * mul
 		org += dx
 		w.SetOrigin(org, true)
 	}

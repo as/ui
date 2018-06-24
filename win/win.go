@@ -202,6 +202,9 @@ func (w *Win) Move(sp image.Point) {
 	w.sp = sp
 }
 
+func (w *Win) Face() font.Face {
+	return font.Open(w.Config.Frame.Face)
+}
 func (w *Win) SetFont(ft font.Face) {
 	if ft.Height() < 4 {
 		return
