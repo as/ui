@@ -69,3 +69,30 @@ func (co *Table2) Upload() {
 func (c *Table2) Dev() ui.Dev                { return c.dev }
 func (c *Table2) Face() font.Face            { return c.ft }
 func (c *Table2) ForceSize(size image.Point) { c.size = size }
+
+// SetFont sets the font of all applicable nodes in the
+// table. Because font.Face is not safe to use concurrently,
+// f must also be a font.Resizer, otherwise the call is a
+// no-op.
+func (c *Table2) SetFont(f font.Face) {
+	if f, ok := f.(font.Cache); ok {
+		for _, c := range c.List {
+			if c, ok := c.(font.Facer); ok {
+				c.SetFont(f)
+			}
+		}
+		return
+	}
+
+	res, ok := f.(font.Resizer)
+	if !ok {
+		return
+	}
+
+	dy := res.Height()
+	for _, c := range c.List {
+		if c, ok := c.(font.Facer); ok {
+			c.SetFont(res.New(dy))
+		}
+	}
+}
