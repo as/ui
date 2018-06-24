@@ -90,7 +90,7 @@ func (t *Table) Upload() {
 }
 
 func (t *Table) FindName(name string) *tag.Tag {
-	for _, v := range t.List[1:] {
+	for _, v := range t.List {
 		switch v := v.(type) {
 		case *Col:
 			t := v.FindName(name)
