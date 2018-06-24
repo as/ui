@@ -77,7 +77,7 @@ func (c *Table2) ForceSize(size image.Point) { c.size = size }
 func (c *Table2) SetFont(f font.Face) {
 	if f, ok := f.(font.Cache); ok {
 		for _, c := range c.List {
-			if c, ok := c.(font.Facer); ok {
+			if c, ok := c.(facer); ok {
 				c.SetFont(f)
 			}
 		}
@@ -91,7 +91,7 @@ func (c *Table2) SetFont(f font.Face) {
 
 	dy := res.Height()
 	for _, c := range c.List {
-		if c, ok := c.(font.Facer); ok {
+		if c, ok := c.(facer); ok {
 			c.SetFont(res.New(dy))
 		}
 	}
