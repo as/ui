@@ -2,7 +2,6 @@ package tag
 
 import (
 	"github.com/as/font"
-	"github.com/as/ui/win"
 )
 
 // Height returns the recommended minimum pixel height for a tag label
@@ -14,17 +13,25 @@ func Height(facePix int) int {
 	return facePix + facePix/2 + facePix/3
 }
 
+// Face returns the tag's font face for the tag's body
+func (w *Tag) Face() font.Face {
+	body, ok := w.Body.(font.Facer)
+	if !ok {
+		return nil
+	}
+	return body.Face()
+}
+
 // SetFont sets the font face
 func (w *Tag) SetFont(ft font.Face) {
-	body := w.Body.(*win.Win)
-	if body == nil {
+	if w.Body == nil {
 		return
 	}
-	if ft.Height() < 3 || w.Body == nil {
+	body, ok := w.Body.(font.Facer)
+	if !ok {
 		return
 	}
 	body.SetFont(ft)
 	w.dirty = true
 	w.Mark()
-	body.Refresh()
 }
