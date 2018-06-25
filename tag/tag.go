@@ -10,7 +10,7 @@ import (
 	"github.com/as/edit"
 	"github.com/as/font"
 	"github.com/as/frame"
-	//	"github.com/as/ui/img"
+	"github.com/as/ui/img"
 	"github.com/as/ui/win"
 	//"github.com/as/worm"
 )
@@ -18,7 +18,6 @@ import (
 var (
 	DefaultLabelHeight = 11
 	DefaultConfig      = Config{
-		Image:      true,
 		FaceHeight: DefaultLabelHeight,
 		Margin:     win.DefaultConfig.Margin,
 		Facer:      font.NewFace,
@@ -47,14 +46,22 @@ type Tag struct {
 
 func New(dev ui.Dev, conf *Config) *Tag {
 	conf = validConfig(conf)
-	t := &Tag{
+	if conf.Image {
+		return &Tag{
+			Fs:     conf.Filesystem,
+			Win:    win.New(dev, conf.TagConfig()),
+			Body:   img.New(dev, nil),
+			ctl:    conf.Ctl,
+			Config: *conf,
+		}
+	}
+	return &Tag{
 		Fs:     conf.Filesystem,
 		Win:    win.New(dev, conf.TagConfig()),
 		Body:   win.New(dev, conf.WinConfig()),
 		ctl:    conf.Ctl,
 		Config: *conf,
 	}
-	return t
 }
 
 func (t *Tag) Close() (err error) {

@@ -4,12 +4,10 @@ import (
 	"github.com/as/font"
 )
 
-
 type facer interface {
 	Face() font.Face
 	SetFont(font.Face)
 }
-
 
 // Height returns the recommended minimum pixel height for a tag label
 // given the face height in pixels.
