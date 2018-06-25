@@ -14,6 +14,7 @@ type Window interface {
 	Dot() (int64, int64)
 	Len() int64
 	Origin() int64
+	Graphical() bool
 	//	IndexOf(image.Point) int64
 	//	PointOf(int64) (image.Point)
 

@@ -12,15 +12,28 @@ import (
 )
 
 type Node struct {
-	Sp, size, pad image.Point
-	dirty         bool
+	sp     image.Point
+	size   image.Point
+	margin image.Point
+	dirty  bool
 }
 
-func (n Node) Size() image.Point {
-	return n.size
+//func (n Node) Size() image.Point {
+//	return n.size
+//}
+//func (n Node) Pad() image.Point {
+//	return n.Sp.Add(n.pad)
+//}
+
+func (w *Img) Area() image.Rectangle {
+	return w.Loc().Add(w.margin)
 }
-func (n Node) Pad() image.Point {
-	return n.Sp.Add(n.pad)
+func (w *Img) area() image.Rectangle {
+	return image.Rectangle{w.margin, w.size}
+}
+
+var DefaultConfig = Config{
+	Margin: image.Pt(13, 3),
 }
 
 type Config struct {
@@ -36,8 +49,9 @@ type Config struct {
 type Img struct {
 	Node
 	ui.Dev
-	img image.Image
-	b   screen.Buffer
+	margin image.Point
+	img    image.Image
+	b      screen.Buffer
 	ScrollBar
 	org int64
 	text.Editor
@@ -47,27 +61,50 @@ type ScrollBar struct {
 	Scrollr image.Rectangle
 }
 
-func New(dev ui.Dev, sp, size image.Point, conf *Config) *Img {
+func New(dev ui.Dev, conf *Config) *Img {
+	if conf == nil {
+		c := DefaultConfig
+		conf = &c
+	}
 	ed, _ := text.Open(text.NewBuffer())
-	b, _ := dev.NewBuffer(size)
+
 	var img image.Image
 	if ed.Len() != 0 {
 		img, _, _ = image.Decode(bytes.NewReader(ed.Bytes()))
 	}
 
 	w := &Img{
-		img:    img,
-		Node:   Node{Sp: sp, size: size, pad: conf.Margin},
 		Dev:    dev,
-		b:      b,
+		margin: conf.Margin,
 		Editor: ed,
+		img:    img,
 	}
 	w.init()
 	return w
 }
 
-func (w *Img) Mark() { w.dirty = true }
+var (
+	MinRect = image.Rect(0, 0, 10, 10)
+)
 
+func (w *Img) reallocimage(size image.Point) bool {
+	if w.b != nil {
+		w.b.Release()
+		w.b = nil
+	}
+	if small(size) {
+		return false
+	}
+	b, err := w.NewBuffer(size)
+	if err != nil {
+		panic(size.String())
+	}
+	w.b = b
+	return true
+}
+func small(size image.Point) bool {
+	return size.X == 0 || size.Y == 0 || size.In(MinRect)
+}
 func (w *Img) init() {
 	w.Blank()
 	w.Fill()
@@ -82,48 +119,60 @@ func (w *Img) Blank() {
 	}
 	r := w.b.RGBA().Bounds()
 	draw.Draw(w.b.RGBA(), r, image.Black, image.ZP, draw.Src)
-	if w.Sp.Y > 0 {
+	if w.sp.Y > 0 {
 		r.Min.Y--
 	}
 	w.Mark()
 	//	w.drawsb()
 }
 
-func (n *Img) Bounds() image.Rectangle { return image.Rectangle{n.Sp, n.Size()} }
-func (w *Img) Buffer() screen.Buffer   { return w.b }
-func (w *Img) Bytes() []byte           { return w.Editor.Bytes() }
-func (w *Img) Dirty() bool             { return w.dirty }
-func (w *Img) Len() int64              { return w.Editor.Len() }
-func (w Img) Loc() image.Rectangle     { return image.Rectangle{w.Sp, w.Sp.Add(w.size)} }
-func (w *Img) Move(sp image.Point)     { w.Sp = sp }
-func (w *Img) Origin() int64           { return w.org }
-func (w *Img) Refresh() {
-	w.Upload()
-	w.Window().Upload(w.Sp, w.b, w.b.Bounds())
-	w.dirty = false
+func (w *Img) Graphical() bool {
+	return w != nil && w.img != nil && w.Dev != nil && w.b != nil && !w.size.In(MinRect) && w.size != image.ZP
 }
-func (w *Img) Upload() {
-	if !w.dirty {
-		return
-	}
-	r := w.img.Bounds()
-	b := w.b
-	draw.Draw(b.RGBA(), b.RGBA().Bounds(), w.img, w.img.Bounds().Min, draw.Src)
-	w.Window().Upload(r.Min, w.b, r)
-	w.dirty = false
-}
-func (w *Img) Resize(size image.Point) {
-	if size.Y < 100 {
-		size.Y = 100
-	}
-	b, _ := w.NewBuffer(size)
-	w.size = size
-	w.b.Release()
-	w.b = b
-	draw.Draw(b.RGBA(), b.RGBA().Bounds(), w.img, w.img.Bounds().Min, draw.Src)
-	w.Refresh()
-}
+
+func (w *Img) Mark()                           { w.dirty = true }
+func (w *Img) Loc() image.Rectangle            { return image.Rectangle{w.sp, w.sp.Add(w.size)} }
+func (w *Img) Bounds() image.Rectangle         { return image.Rectangle{w.sp, w.sp.Add(w.size)} }
+func (w *Img) Buffer() screen.Buffer           { return w.b }
+func (w *Img) Dirty() bool                     { return w.dirty }
+func (w *Img) Bytes() []byte                   { return w.Editor.Bytes() }
+func (w *Img) Len() int64                      { return w.Editor.Len() }
+func (w *Img) Move(sp image.Point)             { w.sp = sp }
+func (w *Img) Origin() int64                   { return w.org }
 func (w *Img) Fill()                           {}
 func (w *Img) Clicksb(pt image.Point, dir int) {}
 func (w *Img) Scroll(dl int)                   {}
 func (w *Img) SetOrigin(org int64, exact bool) {}
+func (w *Img) Refresh() {
+	w.dirty = true
+	w.Upload()
+}
+func (w *Img) Upload() {
+	if !w.dirty || !w.Graphical() {
+		return
+	}
+	b, r := w.b, w.img.Bounds()
+	draw.Draw(b.RGBA(), b.RGBA().Bounds().Add(w.margin), w.img, r.Min, draw.Src)
+	w.Window().Upload(w.sp, w.b, w.minbounds())
+	w.dirty = false
+}
+func (w *Img) Resize(size image.Point) {
+	w.size = size
+	if !w.reallocimage(w.size) {
+		if w == nil {
+			return
+		}
+		w.img = nil
+		return
+	}
+	w.dirty = true
+	if w.Editor.Len() != 0 {
+		w.img, _, _ = image.Decode(bytes.NewReader(w.Editor.Bytes()))
+	}
+	w.init()
+	w.Refresh()
+}
+
+func (w Img) minbounds() image.Rectangle {
+	return image.Rectangle{image.ZP, w.Bounds().Size()}.Union(w.b.Bounds())
+}
