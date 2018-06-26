@@ -10,8 +10,8 @@ type Axis interface {
 
 // Area returns the bounds in which the list elements can reside
 func (c *Col) Area() image.Rectangle {
-	dy := c.Tag.Loc().Dy()
-	r := c.Loc()
+	dy := c.Tag.Bounds().Dy()
+	r := c.Bounds()
 	r.Min.Y += dy
 	return r
 }

@@ -46,10 +46,10 @@ func delta(c Tile, n int) image.Point {
 	y0 := c.Minor(c.Area().Min)
 	y1 := c.Major(c.Area().Max)
 	if n != c.Len() {
-		y0 = c.Minor(c.Kid(n).Loc().Min)
+		y0 = c.Minor(c.Kid(n).Bounds().Min)
 	}
 	if n+1 != c.Len() {
-		y1 = c.Major(c.Kid(n + 1).Loc().Min)
+		y1 = c.Major(c.Kid(n + 1).Bounds().Min)
 	}
 	return y1.Sub(y0)
 }

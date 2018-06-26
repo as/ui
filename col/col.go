@@ -51,7 +51,7 @@ func (co *Col) MoveWin(id int, y int) {
 		return
 	}
 	//FLAG
-	maxy := co.Loc().Max.Y - co.tdy
+	maxy := co.Bounds().Max.Y - co.tdy
 	if y >= maxy {
 		return
 	}
@@ -63,7 +63,7 @@ func (co *Col) Grow(id int, dy int) {
 	if co.badID(a) || co.badID(b) {
 		return
 	}
-	ra, rb := co.List[a].Loc(), co.List[b].Loc()
+	ra, rb := co.List[a].Bounds(), co.List[b].Bounds()
 	ra.Max.Y -= dy
 	if dy := ra.Dy() - co.tdy; dy < 0 {
 		co.Grow(a, -dy)
@@ -75,7 +75,7 @@ func (co *Col) RollUp(id int, dy int) {
 	if id <= 0 || id >= len(co.List) {
 		return
 	}
-	pt := co.Tag.Loc().Min
+	pt := co.Tag.Bounds().Min
 	pt.Y += co.tdy
 	for x := 1; x <= id; x++ {
 		pt.Y += co.tdy

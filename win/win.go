@@ -123,7 +123,7 @@ func (w *Win) reallocimage(size image.Point) bool {
 }
 
 func (w *Win) Area() image.Rectangle {
-	return w.Loc().Add(w.margin)
+	return w.Bounds().Add(w.margin)
 }
 func (w *Win) area() image.Rectangle {
 	return image.Rectangle{w.margin, w.size}
@@ -158,10 +158,6 @@ func (w *Win) Size() image.Point {
 
 func (w *Win) Bounds() image.Rectangle {
 	return image.Rectangle{w.sp, w.sp.Add(w.size)}
-}
-
-func (w Win) Loc() image.Rectangle {
-	return w.Bounds()
 }
 
 func (w *Win) Origin() int64 {

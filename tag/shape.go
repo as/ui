@@ -17,7 +17,7 @@ func (t *Tag) Move(pt image.Point) {
 	if t.Body == nil {
 		return
 	}
-	pt.Y += t.Win.Loc().Dy()
+	pt.Y += t.Win.Bounds().Dy()
 	t.Body.Move(pt)
 }
 
@@ -56,15 +56,11 @@ func (t *Tag) Resize(pt image.Point) {
 
 func (t *Tag) align() {
 	// Coherence: window always under tag
-	r := t.Win.Loc()
+	r := t.Win.Bounds()
 	r.Min.Y = r.Max.Y
 	t.Body.Move(r.Min)
 }
 
-func (t *Tag) Loc() image.Rectangle {
-	return image.Rectangle{t.sp, t.sp.Add(t.size)}
-}
-
 func (t *Tag) Bounds() image.Rectangle {
-	return t.Loc()
+	return image.Rectangle{t.sp, t.sp.Add(t.size)}
 }

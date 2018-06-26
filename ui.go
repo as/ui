@@ -45,11 +45,24 @@ type dev struct {
 	killc  chan bool
 }
 
-func Init(opts *screen.NewWindowOptions) (device Dev, err error) {
+// Config configures the ui device
+type Config = screen.NewWindowOptions
+
+// TODO(as): write a gofix for this
+// for now just type alias to avoid
+// breaking compatibility with old
+// programs
+
+//type Config struct{
+//	Width, Height int
+//	Title         string
+//}
+
+func Init(conf *Config) (device Dev, err error) {
 	errc := make(chan error)
 	go func(errc chan error) {
 		driver.Main(func(scr screen.Screen) {
-			wind, err := scr.NewWindow(opts)
+			wind, err := scr.NewWindow((*screen.NewWindowOptions)(conf))
 			if err != nil {
 				errc <- err
 			}

@@ -31,7 +31,7 @@ func NewTable2(dev ui.Dev, conf *tag.Config) Table2 {
 	}
 }
 
-func (co *Table2) Loc() image.Rectangle {
+func (co *Table2) Bounds() image.Rectangle {
 	if co == nil {
 		return image.ZR
 	}
@@ -40,9 +40,9 @@ func (co *Table2) Loc() image.Rectangle {
 
 func (co *Table2) Move(sp image.Point) {
 	delta := sp.Sub(co.sp)
-	co.Tag.Move(co.Tag.Loc().Min.Add(delta))
+	co.Tag.Move(co.Tag.Bounds().Min.Add(delta))
 	for _, t := range co.List {
-		t.Move(t.Loc().Min.Add(delta))
+		t.Move(t.Bounds().Min.Add(delta))
 	}
 	co.sp = sp
 }

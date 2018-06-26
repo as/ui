@@ -10,7 +10,7 @@ import (
 var noteDelim = []byte("	|")
 
 func notesize(k interface{}) {
-	Note(k.(Labeled), "%s", k.(Plane).Loc())
+	Note(k.(Labeled), "%s", k.(Plane).Bounds())
 }
 
 func Note(l Labeled, fm string, v ...interface{}) {
