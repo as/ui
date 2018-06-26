@@ -26,7 +26,7 @@ func TestNew(t *testing.T) {
 
 	wantshape(t, tt, r)
 	if !tt.Win.Graphical() {
-		t.Fatalf("tag: tag label not graphical (should be graphical; r=%s)", tt.Win.Loc())
+		t.Fatalf("tag: tag label not graphical (should be graphical; r=%s)", tt.Win.Bounds())
 	}
 
 	etch.Blank()
@@ -40,7 +40,7 @@ func TestNew(t *testing.T) {
 	tt = New(etch, nil)
 	testNonNil(t, tt)
 	if tt.Win.Graphical() {
-		t.Fatalf("tag: tag label graphical (shouldnt be graphical; r=%s)", tt.Win.Loc())
+		t.Fatalf("tag: tag label graphical (shouldnt be graphical; r=%s)", tt.Win.Bounds())
 	}
 
 	etch.Blank()
@@ -71,8 +71,8 @@ func TestCreateZero(t *testing.T) {
 	if tt == nil {
 		t.Fatalf("tag is nil")
 	}
-	if tt.Loc() != image.ZR {
-		t.Fatalf("pure zero tag has non zero location: %s", tt.Loc())
+	if tt.Bounds() != image.ZR {
+		t.Fatalf("pure zero tag has non zero location: %s", tt.Bounds())
 	}
 	tt.Insert([]byte("hhello	"), 0)
 	tt.Delete(0, 1)
@@ -105,17 +105,17 @@ func (s sizeentry) Want() image.Rectangle {
 
 func testVisibility(t *testing.T, tt *Tag) {
 	t.Helper()
-	r := tt.Loc()
+	r := tt.Bounds()
 	tt.Move(r.Min)
 	vis := tt.Vis
-	if tt.Loc() != r {
-		t.Fatalf("tag dimensions changed after 0-Move: %s -> %s", r, tt.Loc())
+	if tt.Bounds() != r {
+		t.Fatalf("tag dimensions changed after 0-Move: %s -> %s", r, tt.Bounds())
 	}
 	pt := r.Min
 	tt.Move(r.Min.Add(image.Pt(10000, 10000)))
 	defer tt.Move(pt)
-	if tt.Loc().Size() != r.Size() {
-		t.Fatalf("tag size changed after Move 10k : %s -> %s", r.Size(), tt.Loc().Size())
+	if tt.Bounds().Size() != r.Size() {
+		t.Fatalf("tag size changed after Move 10k : %s -> %s", r.Size(), tt.Bounds().Size())
 	}
 	if tt.Vis != vis {
 		t.Fatalf("tag visibility changed after Move: %v -> %v", vis, tt.Vis)
@@ -178,8 +178,8 @@ func TestResizeZero(t *testing.T) {
 	tt.Resize(image.Pt(1000, 1000))
 	if tt == nil {
 	}
-	if tt.Loc() != image.Rect(0, 0, 1000, 1000) {
-		t.Fatalf("pure zero tag has non zero location: %s", tt.Loc())
+	if tt.Bounds() != image.Rect(0, 0, 1000, 1000) {
+		t.Fatalf("pure zero tag has non zero location: %s", tt.Bounds())
 	}
 	tt.Insert([]byte("hhello	"), 0)
 	tt.Resize(image.Pt(0, 500))
@@ -241,7 +241,7 @@ func ckLayout(t *testing.T, tt *Tag) {
 		t.Fatal("constraint violation: nil tag")
 	}
 
-	r := tt.Loc()
+	r := tt.Bounds()
 	if r != tt.Bounds() {
 		t.Fatalf("constraint violation: bounds != loc: %s != %s", r, tt.Bounds())
 	}
@@ -256,13 +256,13 @@ func ckLayout(t *testing.T, tt *Tag) {
 
 	h := tt.Config.TagHeight()
 	want0 := image.Rect(r.Min.X, r.Min.Y, r.Max.X, r.Min.Y+h)
-	have0 := tt.Win.Loc()
+	have0 := tt.Win.Bounds()
 	if want0 != have0 {
 		t.Fatalf("tag bounds dont match label: have %s want %s", have0, want0)
 	}
 	want0.Min.Y += h
 	want0.Max.Y = r.Max.Y
-	have0 = tt.Body.Loc()
+	have0 = tt.Body.Bounds()
 	if want0 != have0 {
 		t.Fatalf("tag body bounds dont match tag window: have %s want %s", have0, want0)
 	}

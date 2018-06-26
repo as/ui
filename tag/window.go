@@ -27,7 +27,7 @@ type Window interface {
 	Blank()
 	Refresh()
 	Dirty() bool
-	Loc() image.Rectangle
+	Bounds() image.Rectangle
 	Move(image.Point)
 	Resize(image.Point)
 	Close() error

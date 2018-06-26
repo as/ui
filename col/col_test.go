@@ -18,13 +18,13 @@ func TestMain(m *testing.M) {
 }
 
 type Locator interface {
-	Loc() image.Rectangle
+	Bounds() image.Rectangle
 }
 
 func wantshape(t *testing.T, c Locator, want image.Rectangle) {
 	t.Helper()
-	if c.Loc() != want {
-		t.Fatalf("wantshape: %s, have %s", want, c.Loc())
+	if c.Bounds() != want {
+		t.Fatalf("wantshape: %s, have %s", want, c.Bounds())
 	}
 }
 
@@ -67,11 +67,11 @@ func TestMoveNoSizeChange(t *testing.T) {
 	c.Upload()
 	img0 := etch.Screenshot(sr)
 
-	size0 := c.Loc().Size()
+	size0 := c.Bounds().Size()
 	c.Move(image.Pt(55, 55))
 	testNewColHasNoEntries(t, c)
 
-	size1 := c.Loc().Size()
+	size1 := c.Bounds().Size()
 	if size0 != size1 {
 		t.Fatalf("size changed across calls to move: %s -move-> %s", size0, size1)
 	}
@@ -92,8 +92,8 @@ func TestAttachCoherence(t *testing.T) {
 	Attach(c, tt, image.Pt(300, 300))
 	Attach(c, tt2, image.Pt(500, 500))
 
-	y0 := c.Loc().Max.Y
-	y1 := c.List[len(c.List)-1].Loc().Max.Y
+	y0 := c.Bounds().Max.Y
+	y1 := c.List[len(c.List)-1].Bounds().Max.Y
 	if y1 > y0 {
 		t.Fatalf("extended y: %d < %d", y0, y1)
 		etch.WritePNG("TestAttachCoherence.png")
@@ -107,9 +107,9 @@ func TestAttachCoherence(t *testing.T) {
 	c.Refresh()
 	c.Upload()
 	c.Move(image.Pt(700, 10))
-	c.Resize(c.Loc().Size().Add(image.Pt(100, 0)))
-	if c.Loc().Size().Y != r.Size().Y {
-		t.Fatalf("attach extended y-axis: %d -> %d", r.Size().Y, c.Loc().Size().Y)
+	c.Resize(c.Bounds().Size().Add(image.Pt(100, 0)))
+	if c.Bounds().Size().Y != r.Size().Y {
+		t.Fatalf("attach extended y-axis: %d -> %d", r.Size().Y, c.Bounds().Size().Y)
 	}
 	c.Refresh()
 	c.Upload()
@@ -133,7 +133,7 @@ func TestAttach(t *testing.T) {
 	c.Refresh()
 	c.Upload()
 	c.Move(image.Pt(700, 10))
-	c.Resize(c.Loc().Size().Add(image.Pt(100, 0)))
+	c.Resize(c.Bounds().Size().Add(image.Pt(100, 0)))
 	c.Refresh()
 	c.Upload()
 	etch.WritePNG("TestAttach.png")

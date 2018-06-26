@@ -40,7 +40,7 @@ func (t *Table) Dirty() bool {
 
 func (t *Table) IDPoint(pt image.Point) (id int) {
 	for id = 0; id < len(t.List); id++ {
-		if pt.In(t.List[id].Loc()) {
+		if pt.In(t.List[id].Bounds()) {
 			break
 		}
 	}
@@ -178,5 +178,5 @@ func ptInPlane(pt image.Point, p Plane) bool {
 	if p == nil {
 		return false
 	}
-	return pt.In(p.Loc())
+	return pt.In(p.Bounds())
 }

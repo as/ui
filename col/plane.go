@@ -5,7 +5,7 @@ import (
 )
 
 type Plane interface {
-	Loc() image.Rectangle
+	Bounds() image.Rectangle
 	Move(image.Point)
 	Resize(image.Point)
 	Dirty() bool

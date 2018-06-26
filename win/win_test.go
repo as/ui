@@ -20,8 +20,8 @@ func wantshape(t *testing.T, w *Win, want image.Rectangle) {
 	if w.Bounds() != want {
 		t.Fatalf("wantshape: %s, have %s", want, w.Bounds())
 	}
-	if w.Bounds() != w.Loc() {
-		t.Fatalf("wantshape: loc %s != bounds %s", w.Loc(), w.Bounds())
+	if w.Bounds() != w.Bounds() {
+		t.Fatalf("wantshape: loc %s != bounds %s", w.Bounds(), w.Bounds())
 	}
 }
 func wantbytes(t *testing.T, w *Win, text interface{}) {
@@ -52,8 +52,8 @@ func TestNewt(t *testing.T) {
 		t.Fatalf("window is nil")
 	}
 	w.Resize(image.Pt(1000, 1000))
-	if w.Loc() != image.Rect(0, 0, 1000, 1000) {
-		t.Fatalf("pure zero tag has non zero location: %s", w.Loc())
+	if w.Bounds() != image.Rect(0, 0, 1000, 1000) {
+		t.Fatalf("pure zero tag has non zero location: %s", w.Bounds())
 	}
 	w.Insert([]byte("hhello"), 0)
 	w.Resize(image.Pt(0, 500))
@@ -85,8 +85,8 @@ func TestLocation(t *testing.T) {
 					}
 					w.Move(r.Min)
 					w.Resize(r.Size())
-					if w.Loc() != r {
-						t.Fatalf("%v: bad location: %v", r, w.Loc())
+					if w.Bounds() != r {
+						t.Fatalf("%v: bad location: %v", r, w.Bounds())
 					}
 
 					r2 := r.Add(image.Pt(13, 13))
@@ -107,7 +107,7 @@ func testStatelessCrashers(t *testing.T, w *Win) {
 	w.Dot()
 	w.Blank()
 	w.Bounds()
-	w.Loc()
+	w.Bounds()
 	w.Upload()
 }
 

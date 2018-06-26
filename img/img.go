@@ -26,7 +26,7 @@ type Node struct {
 //}
 
 func (w *Img) Area() image.Rectangle {
-	return w.Loc().Add(w.margin)
+	return w.Bounds().Add(w.margin)
 }
 func (w *Img) area() image.Rectangle {
 	return image.Rectangle{w.margin, w.size}
@@ -131,7 +131,6 @@ func (w *Img) Graphical() bool {
 }
 
 func (w *Img) Mark()                           { w.dirty = true }
-func (w *Img) Loc() image.Rectangle            { return image.Rectangle{w.sp, w.sp.Add(w.size)} }
 func (w *Img) Bounds() image.Rectangle         { return image.Rectangle{w.sp, w.sp.Add(w.size)} }
 func (w *Img) Buffer() screen.Buffer           { return w.b }
 func (w *Img) Dirty() bool                     { return w.dirty }
