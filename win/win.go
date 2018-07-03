@@ -209,22 +209,20 @@ func (w *Win) SetFont(ft font.Face) {
 	w.Resize(w.size)
 }
 
-func (w *Win) Visible() bool {
-	return w.b != nil && w.Frame != nil && w.size != image.ZP
+// Visible returns true if the given address is visible
+func (w *Win) Visible(q0, q1 int64) bool {
+	if !w.graphical(){
+		return false
+	}
+	r := text.Region5(q0, q1, w.org-1, w.org+w.Frame.Len()+1)
+	return r != 2 && r != -2
 }
 
 func (w *Win) Blank() {
 	if !w.graphical() {
 		return
 	}
-	r := w.minbounds()
-	draw.Draw(
-		w.b.RGBA(),
-		r,
-		w.Color.Back,
-		image.ZP,
-		draw.Src,
-	)
+	draw.Draw(w.b.RGBA(),w.minbounds(),w.Color.Back,image.ZP,draw.Src)
 	w.Mark()
 	w.drawsb()
 }
