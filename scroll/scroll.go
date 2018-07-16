@@ -5,8 +5,9 @@ import (
 	"image"
 	"image/draw"
 
-	"github.com/as/rgb"
+	"github.com/as/rgba"
 	"github.com/as/text"
+	"github.com/as/ui/reg"
 )
 
 const (
@@ -14,8 +15,8 @@ const (
 )
 
 var DefaultColors = [...]image.Image{
-	rgb.LightGray.Uniform(),
-	rgb.Storm.Uniform(),
+	reg.PutImage(rgba.Scroll, "scroll/fg"),
+	reg.PutImage(rgba.Storm, "scroll/bg"),
 }
 
 type Drawer interface {
@@ -49,10 +50,10 @@ func New(r image.Rectangle, conf Config) (b Bar) {
 	b.fg = conf.Color[0]
 	b.bg = conf.Color[1]
 	if b.fg == nil {
-		b.fg = DefaultColors[0]
+		b.fg = reg.GetImage("scroll/fg")
 	}
 	if b.bg == nil {
-		b.bg = DefaultColors[1]
+		b.bg = reg.GetImage("scroll/bg")
 	}
 	return b
 }
