@@ -3,9 +3,9 @@ package scroll
 
 import (
 	"image"
-	"image/color"
 	"image/draw"
 
+	"github.com/as/rgb"
 	"github.com/as/text"
 )
 
@@ -13,14 +13,10 @@ const (
 	Min = 10
 )
 
-var (
-	Mauve  = image.NewUniform(color.RGBA{216, 216, 232, 255})
-	LtGray = image.NewUniform(color.RGBA{128 + 32 + 16, 128 + 32 + 16, 128 + 32 + 16 + 16, 255})
-)
-
-var (
-	DefaultColors = [...]image.Image{LtGray, Mauve}
-)
+var DefaultColors = [...]image.Image{
+	rgb.LightGray.Uniform(),
+	rgb.Storm.Uniform(),
+}
 
 type Drawer interface {
 	Draw(dst draw.Image, r image.Rectangle, src image.Image, sp image.Point, op draw.Op)
