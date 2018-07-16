@@ -1,5 +1,6 @@
 package tag
 
+/*
 import (
 	"image"
 	"image/color"
@@ -16,5 +17,9 @@ var (
 
 	LtGray = image.NewUniform(color.RGBA{66 * 2, 66 * 2, 66*2 + 35, 255})
 	Gray   = image.NewUniform(color.RGBA{66, 66, 66, 255})
-	Mauve  = image.NewUniform(color.RGBA{0x99, 0x99, 0xDD, 255})
+	
+	Mauve  = &image.Uniform{color.RGBA{0x90, 0x90, 0xc0,0xff}}
+	Strata = &image.Uniform{color.RGBA{0xf8, 0xf2, 0xf8,0xFF}}
+	Peach = &image.Uniform{color.RGBA{0xff,0xf8,0xe8,0xff}}
 )
+*/
