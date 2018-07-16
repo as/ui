@@ -211,7 +211,7 @@ func (w *Win) SetFont(ft font.Face) {
 
 // Visible returns true if the given address is visible
 func (w *Win) Visible(q0, q1 int64) bool {
-	if !w.graphical(){
+	if !w.graphical() {
 		return false
 	}
 	r := text.Region5(q0, q1, w.org-1, w.org+w.Frame.Len()+1)
@@ -222,7 +222,7 @@ func (w *Win) Blank() {
 	if !w.graphical() {
 		return
 	}
-	draw.Draw(w.b.RGBA(),w.minbounds(),w.Color.Back,image.ZP,draw.Src)
+	draw.Draw(w.b.RGBA(), w.minbounds(), w.Color.Back, image.ZP, draw.Src)
 	w.Mark()
 	w.drawsb()
 }
