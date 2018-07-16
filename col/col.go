@@ -5,7 +5,7 @@ import (
 
 	"github.com/as/font"
 	"github.com/as/frame"
-	"github.com/as/rgb"
+	"github.com/as/rgba"
 	"github.com/as/ui"
 	"github.com/as/ui/tag"
 )
@@ -19,7 +19,7 @@ var DefaultConfig = &tag.Config{
 	Facer:      font.NewFace,
 	FaceHeight: 11,
 	Color: [3]frame.Color{
-		frame.NewUniform(rgb.Gray, rgb.Strata, rgb.White, rgb.Mauve),
+		frame.Theme(rgba.Gray, rgba.Strata, rgba.White, rgba.Mauve),
 	},
 	Ctl: make(chan interface{}, 10),
 }
