@@ -22,8 +22,8 @@ var DefaultConfig = Config{
 	Margin:     win.DefaultConfig.Margin,
 	Facer:      font.NewFace,
 	Color: [3]frame.Color{
-		frame.NewColor(image.Black, image.White, image.White, image.Black),
-		frame.NewColor(image.White, image.Black, image.Black, image.White),
+		frame.Theme(image.Black, image.White, image.White, image.Black),
+		frame.Theme(image.White, image.Black, image.Black, image.White),
 	},
 }
 
