@@ -47,13 +47,7 @@ func (c *Config) TagConfig() *win.Config {
 		Ctl:    c.Ctl,
 		Facer:  c.Facer,
 		Margin: c.Margin,
-		Scroll: scroll.Config{
-			Enable: false,
-			Color: [2]image.Image{
-				c.Color[2].Text,
-				c.Color[2].Back,
-			},
-		},
+		Scroll: scroll.Config{Enable: false},
 		Frame: frame.Config{
 			Color: c.Color[0],
 			Face:  c.Facer(c.FaceHeight),
