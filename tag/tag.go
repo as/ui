@@ -15,18 +15,17 @@ import (
 	//"github.com/as/worm"
 )
 
-var (
-	DefaultLabelHeight = 11
-	DefaultConfig      = Config{
-		FaceHeight: DefaultLabelHeight,
-		Margin:     win.DefaultConfig.Margin,
-		Facer:      font.NewFace,
-		Color: [3]frame.Color{
-			0: frame.ATag1,
-			1: frame.A,
-		},
-	}
-)
+var DefaultLabelHeight = 11
+
+var DefaultConfig = Config{
+	FaceHeight: DefaultLabelHeight,
+	Margin:     win.DefaultConfig.Margin,
+	Facer:      font.NewFace,
+	Color: [3]frame.Color{
+		frame.NewColor(image.Black, image.White, image.White, image.Black),
+		frame.NewColor(image.White, image.Black, image.Black, image.White),
+	},
+}
 
 type Tag struct {
 	Vis
