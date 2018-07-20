@@ -38,7 +38,8 @@ func Fill(t Tile) {
 		if pt == image.ZP {
 			//panic("zp")
 		}
-		defer t.Kid(n).Resize(pt)
+		//		defer t.Kid(n).Resize(pt)
+		t.Kid(n).Resize(pt)
 	}
 }
 
