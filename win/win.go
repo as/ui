@@ -256,7 +256,7 @@ func (w Win) minbounds() image.Rectangle {
 }
 
 func (w *Win) Upload() {
-	if !w.dirty || !w.graphical() {
+	if !w.graphical() {
 		return
 	}
 	w.Window().Upload(w.sp, w.b, w.minbounds())
