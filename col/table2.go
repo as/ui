@@ -2,7 +2,6 @@ package col
 
 import (
 	"image"
-	"sync"
 
 	"github.com/as/font"
 	"github.com/as/ui"
@@ -51,19 +50,13 @@ func (co *Table2) Upload() {
 	type Uploader interface {
 		Upload()
 	}
-	var wg sync.WaitGroup
-	wg.Add(len(co.List))
 	for _, w := range co.List {
 		w, _ := w.(Uploader)
-		go func() {
-			defer wg.Done()
-			if w != nil {
-				w.Upload()
-			}
-		}()
+		if w != nil {
+			defer w.Upload()
+		}
 	}
 	co.Tag.Upload()
-	wg.Wait()
 }
 
 func (c *Table2) Dev() ui.Dev                { return c.dev }
