@@ -31,6 +31,7 @@ type Win interface {
 	Upload()
 	Resize(size image.Point)
 	Move(sp image.Point)
+	Write(p []byte) (n int, err error)
 }
 
 type Dev interface {
