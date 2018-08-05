@@ -32,7 +32,7 @@ func TestNew(t *testing.T) {
 	etch.Blank()
 	{
 		tt.Win.Insert([]byte("hello"), 0)
-		tt.Body.Insert([]byte("world"), 0)
+		tt.Window.Insert([]byte("world"), 0)
 		tt.Upload()
 	}
 	img0 := etch.Screenshot(r)
@@ -46,7 +46,7 @@ func TestNew(t *testing.T) {
 	etch.Blank()
 	{
 		tt.Win.Insert([]byte("hello"), 0)
-		tt.Body.Insert([]byte("world"), 0)
+		tt.Window.Insert([]byte("world"), 0)
 		tt.Resize(r.Size())
 		tt.Upload()
 	}
@@ -61,7 +61,7 @@ func TestNewDirty(t *testing.T) {
 	if !tt.Win.Dirty() {
 		t.Fatalf("new tag window shouldn't be clean")
 	}
-	if !tt.Body.Dirty() {
+	if !tt.Window.Dirty() {
 		t.Fatalf("new tag body shouldn't be clean")
 	}
 }
@@ -230,7 +230,7 @@ func testNonNil(t *testing.T, tt *Tag) {
 	if tt.Win == nil {
 		t.Fatalf("tag: label is nil")
 	}
-	if tt.Body == nil {
+	if tt.Window == nil {
 		t.Fatalf("tag: body is nil")
 	}
 }
@@ -246,11 +246,11 @@ func ckLayout(t *testing.T, tt *Tag) {
 		t.Fatalf("constraint violation: bounds != loc: %s != %s", r, tt.Bounds())
 	}
 
-	if tt.Win == nil && tt.Body != nil {
+	if tt.Win == nil && tt.Window != nil {
 		// Sutle: This is a different class of errors than the one below. Don't remove it.
 		t.Fatalf("constraint violation: tag window == nil but body != nil")
 	}
-	if tt.Win == nil || tt.Body == nil {
+	if tt.Win == nil || tt.Window == nil {
 		t.Fatalf("constraint violation: tag or win is nil")
 	}
 
@@ -262,7 +262,7 @@ func ckLayout(t *testing.T, tt *Tag) {
 	}
 	want0.Min.Y += h
 	want0.Max.Y = r.Max.Y
-	have0 = tt.Body.Bounds()
+	have0 = tt.Window.Bounds()
 	if want0 != have0 {
 		t.Fatalf("tag body bounds dont match tag window: have %s want %s", have0, want0)
 	}

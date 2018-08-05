@@ -18,6 +18,13 @@ func Height(facePix int) int {
 	return facePix + facePix/2 + facePix/3
 }
 
+// Face sets the font face
+func (w *Tag) Face() font.Face{
+	if f, ok := w.Window.(facer); ok{
+		return f.Face()
+	}
+	return nil
+}
 // SetFont sets the font face
 func (w *Tag) SetFont(ft font.Face) {
 	if f, ok := w.Window.(facer); ok{

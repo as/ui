@@ -10,7 +10,7 @@ import (
 	"github.com/as/text"
 	"github.com/as/text/action"
 	"github.com/as/ui/win"
-	"golang.org/x/mobile/event/mouse"
+	"github.com/as/shiny/event/mouse"
 )
 
 var ErrNoFile = errors.New("no file")
