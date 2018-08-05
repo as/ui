@@ -33,7 +33,7 @@ type Tag struct {
 	size image.Point
 
 	Win *win.Win
-	Body      Window //*win.Win
+	Window //*win.Win
 	Scrolling bool
 	fs.Fs
 
