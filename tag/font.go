@@ -18,25 +18,11 @@ func Height(facePix int) int {
 	return facePix + facePix/2 + facePix/3
 }
 
-// Face returns the tag's font face for the tag's body
-func (w *Tag) Face() font.Face {
-	body, ok := w.Body.(facer)
-	if !ok {
-		return nil
-	}
-	return body.Face()
-}
-
 // SetFont sets the font face
 func (w *Tag) SetFont(ft font.Face) {
-	if w.Body == nil {
-		return
+	if f, ok := w.Window.(facer); ok{
+		f.SetFont(ft)
+		w.dirty = true
+		w.Mark()
 	}
-	body, ok := w.Body.(facer)
-	if !ok {
-		return
-	}
-	body.SetFont(ft)
-	w.dirty = true
-	w.Mark()
 }
