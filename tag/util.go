@@ -17,7 +17,7 @@ func max(a, b int) int {
 }
 
 func (t *Tag) dirfmt(p []byte) []byte {
-	win, _ := t.Body.(*win.Win)
+	win, _ := t.Window.(*win.Win)
 	if win == nil {
 		return nil
 	}
