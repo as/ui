@@ -49,7 +49,7 @@ func New(dev ui.Dev, conf *Config) *Tag {
 		return &Tag{
 			Fs:     conf.Filesystem,
 			Win:    win.New(dev, conf.TagConfig()),
-			Body:   img.New(dev, nil),
+			Window:   img.New(dev, nil),
 			ctl:    conf.Ctl,
 			Config: *conf,
 		}
@@ -57,15 +57,15 @@ func New(dev ui.Dev, conf *Config) *Tag {
 	return &Tag{
 		Fs:     conf.Filesystem,
 		Win:    win.New(dev, conf.TagConfig()),
-		Body:   win.New(dev, conf.WinConfig()),
+		Window:   win.New(dev, conf.WinConfig()),
 		ctl:    conf.Ctl,
 		Config: *conf,
 	}
 }
 
 func (t *Tag) Close() (err error) {
-	if t.Body != nil {
-		err = t.Body.Close()
+	if t.Window != nil {
+		err = t.Window.Close()
 	}
 	if t.Win != nil {
 		err = t.Win.Close()
@@ -74,7 +74,7 @@ func (t *Tag) Close() (err error) {
 }
 
 func (t *Tag) Dirty() bool {
-	return t.dirty || t.Win.Dirty() || (t.Body != nil && t.Body.Dirty())
+	return t.dirty || t.Win.Dirty() || (t.Window != nil && t.Window.Dirty())
 }
 
 func (t *Tag) Mark() {
@@ -85,12 +85,12 @@ func (t *Tag) Mark() {
 //var crimson = image.NewUniform(color.RGBA{70, 40, 56, 255})
 
 func (t *Tag) Upload() {
-	t.Body.Upload()
+	t.Window.Upload()
 	t.Win.Upload()
 }
 
 func (t *Tag) Refresh() {
-	t.Body.Refresh()
+	t.Window.Refresh()
 	t.Win.Refresh()
 }
 
