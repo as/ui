@@ -8,7 +8,7 @@ import (
 	"os"
 
 	"github.com/as/shiny/screen"
-	"golang.org/x/image/math/f64"
+	"github.com/as/shiny/math/f64"
 )
 
 var screenRect = image.Rect(0, 0, 2048, 2048)
