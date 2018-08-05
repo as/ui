@@ -26,8 +26,8 @@ func (t *Tag) zGet(name string) error {
 	if err != nil {
 		return err
 	}
-	w := t.Body
-	w.Delete(0, t.Body.Len())
+	w := t
+	w.Delete(0, t.Len())
 	w.Insert(data, 0)
 	w.SetOrigin(0, true)
 	w.Select(0, 0)
@@ -54,11 +54,11 @@ func (t *Tag) Get(name string) {
 }
 
 func (t *Tag) Put() (err error) {
-	return t.Fs.Put(t.FileName(), t.Body.Bytes())
+	return t.Fs.Put(t.FileName(), t.Bytes())
 }
 
 func (t *Tag) getbody(abs, addr string) {
-	w := t.Body
+	w := t
 	w.Delete(0, w.Len())
 	w.Insert(t.readfile(abs), 0)
 	w.Select(0, 0)
