@@ -101,8 +101,8 @@ func TestAttachCoherence(t *testing.T) {
 	c.Refresh()
 	c.Tag.Insert([]byte("The"), 0)
 	tt.Win.Insert([]byte("Quick"), 0)
-	tt.Body.Insert([]byte("Brown"), 0)
-	tt2.Body.Insert([]byte("Fox"), 0)
+	tt.Window.Insert([]byte("Brown"), 0)
+	tt2.Window.Insert([]byte("Fox"), 0)
 	c.Move(image.Pt(500, 1))
 	c.Refresh()
 	c.Upload()
@@ -127,8 +127,8 @@ func TestAttach(t *testing.T) {
 	c.Refresh()
 	c.Tag.Insert([]byte("The"), 0)
 	tt.Win.Insert([]byte("Quick"), 0)
-	tt.Body.Insert([]byte("Brown"), 0)
-	tt2.Body.Insert([]byte("Fox"), 0)
+	tt.Window.Insert([]byte("Brown"), 0)
+	tt2.Window.Insert([]byte("Fox"), 0)
 	c.Move(image.Pt(500, 1))
 	c.Refresh()
 	c.Upload()
@@ -190,7 +190,7 @@ func testNonNil(t *testing.T, c *Col) {
 		if c.Win == nil {
 			t.Fatalf("col: tag label is nil")
 		}
-		if c.Body == nil {
+		if c.Window == nil {
 			t.Fatalf("col: tag body is nil")
 		}
 	}
