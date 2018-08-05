@@ -32,7 +32,7 @@ type Tag struct {
 	sp   image.Point
 	size image.Point
 
-	*win.Win
+	Win *win.Win
 	Body      Window //*win.Win
 	Scrolling bool
 	fs.Fs

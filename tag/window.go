@@ -8,6 +8,7 @@ import (
 
 type Window interface {
 	Bytes() []byte
+	Write(p []byte) (n int, err error)
 
 	Select(q0, q1 int64)
 	SetOrigin(org int64, exact bool)
