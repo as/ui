@@ -32,8 +32,8 @@ type Tag struct {
 	sp   image.Point
 	size image.Point
 
-	Win *win.Win
-	Window //*win.Win
+	Label *win.Win
+	Window
 	Scrolling bool
 	fs.Fs
 
@@ -48,16 +48,16 @@ func New(dev ui.Dev, conf *Config) *Tag {
 	if conf.Image {
 		return &Tag{
 			Fs:     conf.Filesystem,
-			Win:    win.New(dev, conf.TagConfig()),
-			Window:   img.New(dev, nil),
+			Label:  win.New(dev, conf.TagConfig()),
+			Window: img.New(dev, nil),
 			ctl:    conf.Ctl,
 			Config: *conf,
 		}
 	}
 	return &Tag{
 		Fs:     conf.Filesystem,
-		Win:    win.New(dev, conf.TagConfig()),
-		Window:   win.New(dev, conf.WinConfig()),
+		Label:  win.New(dev, conf.TagConfig()),
+		Window: win.New(dev, conf.WinConfig()),
 		ctl:    conf.Ctl,
 		Config: *conf,
 	}
@@ -67,31 +67,31 @@ func (t *Tag) Close() (err error) {
 	if t.Window != nil {
 		err = t.Window.Close()
 	}
-	if t.Win != nil {
-		err = t.Win.Close()
+	if t.Label != nil {
+		err = t.Label.Close()
 	}
 	return err
 }
 
 func (t *Tag) Dirty() bool {
-	return t.dirty || t.Win.Dirty() || (t.Window != nil && t.Window.Dirty())
+	return t.dirty || t.Label.Dirty() || (t.Window != nil && t.Window.Dirty())
 }
 
 func (t *Tag) Mark() {
 	t.dirty = true
-	t.Win.Mark()
+	t.Label.Mark()
 }
 
 //var crimson = image.NewUniform(color.RGBA{70, 40, 56, 255})
 
 func (t *Tag) Upload() {
 	t.Window.Upload()
-	t.Win.Upload()
+	t.Label.Upload()
 }
 
 func (t *Tag) Refresh() {
 	t.Window.Refresh()
-	t.Win.Refresh()
+	t.Label.Refresh()
 }
 
 func mustCompile(prog string) *edit.Command {

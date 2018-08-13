@@ -9,10 +9,10 @@ import (
 )
 
 func (t *Tag) FileName() string {
-	if t == nil || t.Win == nil {
+	if t == nil || t.Label == nil {
 		return ""
 	}
-	name, err := bufio.NewReader(bytes.NewReader(t.Win.Bytes())).ReadString('\t')
+	name, err := bufio.NewReader(bytes.NewReader(t.Label.Bytes())).ReadString('\t')
 	if err != nil {
 		return ""
 	}
@@ -25,15 +25,14 @@ func (t *Tag) Open(basepath, title string) {
 }
 
 func (t *Tag) fixtag(abs string) {
-	wtag := t.Win
-	p := wtag.Bytes()
-	maint := find.Find(p, 0, []byte{'|'})
+	l := t.Label
+	maint := find.Find(l.Bytes(), 0, []byte{'|'})
 	if maint == -1 {
-		maint = int64(len(p))
+		maint = l.Len()
 	}
-	wtag.Delete(0, maint+1)
-	wtag.InsertString(abs+"\tPut Del |", 0)
-	wtag.Refresh()
+	l.Delete(0, maint+1)
+	l.InsertString(abs+"\tPut Del |", 0)
+	l.Refresh()
 }
 
 type GetEvent struct {

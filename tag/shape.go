@@ -13,8 +13,8 @@ const (
 
 func (t *Tag) Move(pt image.Point) {
 	t.sp = pt
-	t.Win.Move(pt)
-	pt.Y += t.Win.Bounds().Dy()
+	t.Label.Move(pt)
+	pt.Y += t.Label.Bounds().Dy()
 	t.Window.Move(pt)
 }
 
@@ -23,7 +23,7 @@ func (t *Tag) Resize(pt image.Point) {
 	if ts > pt.Y {
 		pt.Y = 0
 		t.size = pt
-		t.Win.Resize(pt)
+		t.Label.Resize(pt)
 		t.Window.Resize(pt)
 		t.Vis = VisNone
 		return
@@ -34,7 +34,7 @@ func (t *Tag) Resize(pt image.Point) {
 		// have enough room.
 		pt.Y = ts
 		t.size = pt
-		t.Win.Resize(pt)
+		t.Label.Resize(pt)
 
 		// Coherence: window always under tag
 		t.align()
@@ -45,7 +45,7 @@ func (t *Tag) Resize(pt image.Point) {
 		return
 	}
 	t.size = pt
-	t.Win.Resize(image.Pt(pt.X, ts))
+	t.Label.Resize(image.Pt(pt.X, ts))
 	t.align()
 	t.Window.Resize(image.Pt(pt.X, pt.Y-ts))
 	t.Vis = VisFull
@@ -53,7 +53,7 @@ func (t *Tag) Resize(pt image.Point) {
 
 func (t *Tag) align() {
 	// Coherence: window always under tag
-	r := t.Win.Bounds()
+	r := t.Label.Bounds()
 	r.Min.Y = r.Max.Y
 	t.Window.Move(r.Min)
 }

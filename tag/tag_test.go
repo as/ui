@@ -25,13 +25,13 @@ func TestNew(t *testing.T) {
 	testNonNil(t, tt)
 
 	wantshape(t, tt, r)
-	if !tt.Win.Graphical() {
-		t.Fatalf("tag: tag label not graphical (should be graphical; r=%s)", tt.Win.Bounds())
+	if !tt.Label.Graphical() {
+		t.Fatalf("tag: tag label not graphical (should be graphical; r=%s)", tt.Label.Bounds())
 	}
 
 	etch.Blank()
 	{
-		tt.Win.Insert([]byte("hello"), 0)
+		tt.Label.Insert([]byte("hello"), 0)
 		tt.Window.Insert([]byte("world"), 0)
 		tt.Upload()
 	}
@@ -39,13 +39,13 @@ func TestNew(t *testing.T) {
 
 	tt = New(etch, nil)
 	testNonNil(t, tt)
-	if tt.Win.Graphical() {
-		t.Fatalf("tag: tag label graphical (shouldnt be graphical; r=%s)", tt.Win.Bounds())
+	if tt.Label.Graphical() {
+		t.Fatalf("tag: tag label graphical (shouldnt be graphical; r=%s)", tt.Label.Bounds())
 	}
 
 	etch.Blank()
 	{
-		tt.Win.Insert([]byte("hello"), 0)
+		tt.Label.Insert([]byte("hello"), 0)
 		tt.Window.Insert([]byte("world"), 0)
 		tt.Resize(r.Size())
 		tt.Upload()
@@ -58,7 +58,7 @@ func TestNew(t *testing.T) {
 func TestNewDirty(t *testing.T) {
 	tt := New(etch, nil)
 	tt.Resize(image.Pt(1000, 1000))
-	if !tt.Win.Dirty() {
+	if !tt.Label.Dirty() {
 		t.Fatalf("new tag window shouldn't be clean")
 	}
 	if !tt.Window.Dirty() {
@@ -74,7 +74,7 @@ func TestCreateZero(t *testing.T) {
 	if tt.Bounds() != image.ZR {
 		t.Fatalf("pure zero tag has non zero location: %s", tt.Bounds())
 	}
-	tt.Insert([]byte("hhello	"), 0)
+	tt.Label.Insert([]byte("hello	"), 0)
 	tt.Delete(0, 1)
 	tt.Select(0, 1)
 	tt.Dot()
@@ -181,7 +181,7 @@ func TestResizeZero(t *testing.T) {
 	if tt.Bounds() != image.Rect(0, 0, 1000, 1000) {
 		t.Fatalf("pure zero tag has non zero location: %s", tt.Bounds())
 	}
-	tt.Insert([]byte("hhello	"), 0)
+	tt.Label.Insert([]byte("hello	"), 0)
 	tt.Resize(image.Pt(0, 500))
 	tt.Delete(0, 1)
 	tt.Select(0, 1)
@@ -227,7 +227,7 @@ func testNonNil(t *testing.T, tt *Tag) {
 		t.Fatalf("tag: tag is nil")
 	}
 
-	if tt.Win == nil {
+	if tt.Label == nil {
 		t.Fatalf("tag: label is nil")
 	}
 	if tt.Window == nil {
@@ -246,17 +246,17 @@ func ckLayout(t *testing.T, tt *Tag) {
 		t.Fatalf("constraint violation: bounds != loc: %s != %s", r, tt.Bounds())
 	}
 
-	if tt.Win == nil && tt.Window != nil {
+	if tt.Label == nil && tt.Window != nil {
 		// Sutle: This is a different class of errors than the one below. Don't remove it.
 		t.Fatalf("constraint violation: tag window == nil but body != nil")
 	}
-	if tt.Win == nil || tt.Window == nil {
+	if tt.Label == nil || tt.Window == nil {
 		t.Fatalf("constraint violation: tag or win is nil")
 	}
 
 	h := tt.Config.TagHeight()
 	want0 := image.Rect(r.Min.X, r.Min.Y, r.Max.X, r.Min.Y+h)
-	have0 := tt.Win.Bounds()
+	have0 := tt.Label.Bounds()
 	if want0 != have0 {
 		t.Fatalf("tag bounds dont match label: have %s want %s", have0, want0)
 	}
