@@ -60,7 +60,7 @@ func (t *Table) Len() int {
 	return len(t.List)
 }
 func (t *Table) Label() *win.Win {
-	return t.Tag.Win
+	return t.Tag.Label
 }
 
 func (t *Table) Kid(n int) Plane {
