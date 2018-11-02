@@ -5,12 +5,13 @@ import (
 	"errors"
 	"image"
 	"io"
+	"runtime"
 
 	"github.com/as/path"
+	"github.com/as/shiny/event/mouse"
 	"github.com/as/text"
 	"github.com/as/text/action"
 	"github.com/as/ui/win"
-	"github.com/as/shiny/event/mouse"
 )
 
 var ErrNoFile = errors.New("no file")
@@ -81,7 +82,12 @@ func Visible(w *win.Win, q0, q1 int64) bool {
 
 // Snarf -- TODO(as): move snarf out of here, it doesn't belong in this package
 func Snarf(w text.Editor, e mouse.Event) {
-	n := copy(ClipBuf, toUTF16([]byte(Rdsel(w))))
+	var n int
+	if runtime.GOOS == "windows" {
+		n = copy(ClipBuf, toUTF16([]byte(Rdsel(w))))
+	} else {
+		n = copy(ClipBuf, []byte(Rdsel(w)))
+	}
 	io.Copy(Clip, bytes.NewReader(ClipBuf[:n]))
 	q0, q1 := w.Dot()
 	w.Delete(q0, q1)
@@ -91,7 +97,10 @@ func Snarf(w text.Editor, e mouse.Event) {
 // Paste -- TODO(as): move paste out of here, it doesn't belong in this package
 func Paste(w text.Editor, e mouse.Event) (int64, int64) {
 	n, _ := Clip.Read(ClipBuf)
-	s := fromUTF16(ClipBuf[:n])
+	s := ClipBuf[:n]
+	if runtime.GOOS == "windows" {
+		s = fromUTF16(s)
+	}
 	q0, q1 := w.Dot()
 	if q0 != q1 {
 		w.Delete(q0, q1)
