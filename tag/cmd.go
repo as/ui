@@ -100,6 +100,8 @@ func Paste(w text.Editor, e mouse.Event) (int64, int64) {
 	s := ClipBuf[:n]
 	if runtime.GOOS == "windows" {
 		s = fromUTF16(s)
+	} else {
+		s = append([]byte{}, s...)
 	}
 	q0, q1 := w.Dot()
 	if q0 != q1 {
