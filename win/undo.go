@@ -55,9 +55,9 @@ type (
 		Do(w *Win) int
 		Un() Op
 	}
-	 OpIns op
-	 OpDel op
-	 op struct {
+	OpIns op
+	OpDel op
+	op    struct {
 		q0, q1 int64
 		p      []byte
 	}
