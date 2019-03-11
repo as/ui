@@ -6,6 +6,10 @@ import "fmt"
 // features. This is set to off by default. Eventually the variable
 // will be removed.
 //
+// See-also:
+// 	ins.go:/EnableUndoExperiment/
+// 	del.go:/EnableUndoExperiment/
+//
 var EnableUndoExperiment = false
 
 type Ops struct {
