@@ -6,17 +6,24 @@ import (
 
 // Insert inserts the bytes in p at position q0. When q0
 // is zero, Insert prepends the bytes in p to the underlying
-// buffer
-func (w *Win) Insert(p []byte, q0 int64) (n int) {
+// buffer.
+func (w *Win) Insert(p []byte, q0 int64) int {
+	if EnableUndoExperiment {
+		w.ops.Insert(p, q0)
+	}
+	return w.insert(p, q0)
+}
+
+func (w *Win) insert(p []byte, q0 int64) int {
 	if w.Editor == nil {
 		panic("nil editor")
 	}
 	if len(p) == 0 {
 		return 0
 	}
-	n = w.Editor.Insert(p, q0)
+	n := w.Editor.Insert(p, q0)
 	if !w.graphical() {
-		return
+		return n
 	}
 
 	// If at least one point in the region overlaps the
