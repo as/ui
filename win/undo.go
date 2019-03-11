@@ -46,22 +46,20 @@ func (o *Ops) commit(op Op) int {
 	return 0
 }
 
-type Op interface {
-	Do(w *Win) int
-	Un() Op
-}
-
-type OpIns op
+type (
+	Op interface {
+		Do(w *Win) int
+		Un() Op
+	}
+	 OpIns op
+	 OpDel op
+	 op struct {
+		q0, q1 int64
+		p      []byte
+	}
+)
 
 func (o OpIns) Do(w *Win) int { return w.insert(o.p, o.q0) }
-func (o OpIns) Un() Op        { return OpDel(o) }
-
-type OpDel op
-
 func (o OpDel) Do(w *Win) int { return w.delete(o.q0, o.q1) }
+func (o OpIns) Un() Op        { return OpDel(o) }
 func (o OpDel) Un() Op        { return OpIns(o) }
-
-type op struct {
-	q0, q1 int64
-	p      []byte
-}
