@@ -50,6 +50,7 @@ type Win struct {
 	*frame.Frame
 	ui.Dev
 	ctl chan interface{}
+	ops Ops
 
 	b                screen.Buffer
 	sp, size, margin image.Point
@@ -260,7 +261,7 @@ func (w *Win) Upload() {
 		return
 	}
 	w.Window().Upload(w.sp, w.b, w.minbounds())
-	w.Flush()
+	//	w.Flush()
 	w.dirty = false
 }
 
