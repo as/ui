@@ -5,3 +5,14 @@ package win
 // will be removed.
 //
 var EnableUndoExperiment = false
+
+type Op interface {
+	Do(w *Win) int
+	Un() Op
+}
+type op struct {
+	q0, q1 int64
+	p      []byte
+}
+type OpIns op
+type OpDel op
