@@ -1,10 +1,21 @@
 package win
 
-import "github.com/as/text"
+import (
+	"fmt"
+
+	"github.com/as/text"
+)
 
 // Delete deletes the range [q0:q1] inclusive. If there
 // is nothing to delete, it returns 0.
 func (w *Win) Delete(q0, q1 int64) (n int) {
+	if EnableUndoExperiment {
+		println(fmt.Sprintf("#%d,#%d d\n", q0, q1))
+	}
+	return w.delete(q0, q1)
+}
+
+func (w *Win) delete(q0, q1 int64) (n int) {
 	if w.Len() == 0 {
 		return 0
 	}
