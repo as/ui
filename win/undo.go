@@ -18,11 +18,11 @@ type Ops struct {
 }
 
 func (o *Ops) Insert(p []byte, q0 int64) int {
-	println(fmt.Sprintf("#%d i,%q,\n", q0, p))
+	//println(fmt.Sprintf("#%d i,%q,\n", q0, p))
 	return o.commit(OpIns{q0: q0, q1: int64(len(p)) + q0, p: p})
 }
 func (o *Ops) Delete(q0, q1 int64, p []byte) int {
-	println(fmt.Sprintf("#%d,#%d d\n", q0, q1))
+	//println(fmt.Sprintf("#%d,#%d d\n", q0, q1))
 	return o.commit(OpDel{q0: q0, q1: q1, p: []byte(string(p[q0:q1]))})
 }
 func (o *Ops) Redo(w *Win) bool {
