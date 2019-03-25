@@ -38,9 +38,9 @@ type buffer struct {
 func (o *buffer) commit(ins bool) {
 	if ins {
 		o.Ops.Insert(o.scratch.p, o.scratch.q0)
-		o.scratch.q0 += o.scratch.q0 + int64(len(p))
+		o.scratch.q0 += o.scratch.q0 + int64(len(o.scratch.p))
 	} else {
-		o.Ops.Delete(o.scratch.q0, o.scratch.q1)
+		o.Ops.Delete(o.scratch.q0, o.scratch.q1, o.scratch.p)
 		o.scratch.q1 = o.scratch.q0
 	}
 }
