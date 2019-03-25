@@ -13,7 +13,7 @@ import (
 // 	ins.go:/EnableUndoExperiment/
 // 	del.go:/EnableUndoExperiment/
 //
-var EnableUndoExperiment = true
+var EnableUndoExperiment = false
 
 func (w *Win) Undo() bool {
 	if !EnableUndoExperiment {
