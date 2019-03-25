@@ -50,7 +50,7 @@ type Win struct {
 	*frame.Frame
 	ui.Dev
 	ctl chan interface{}
-	ops Ops
+	ops buffer
 
 	b                screen.Buffer
 	sp, size, margin image.Point
